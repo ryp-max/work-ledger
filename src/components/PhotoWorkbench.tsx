@@ -138,6 +138,61 @@ export function PhotoWorkbench() {
     }
   }, []);
 
+  // Play a lamp switch toggle sound (metal/plastic toggle switch)
+  const playSwitchSound = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      
+      // Layer 1: Sharp metallic click
+      const metalClick = audioContext.createOscillator();
+      const metalGain = audioContext.createGain();
+      const metalFilter = audioContext.createBiquadFilter();
+      
+      metalClick.type = 'triangle';
+      metalClick.frequency.setValueAtTime(4000, audioContext.currentTime);
+      metalClick.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.008);
+      
+      metalFilter.type = 'highpass';
+      metalFilter.frequency.setValueAtTime(2000, audioContext.currentTime);
+      
+      metalGain.gain.setValueAtTime(0.25, audioContext.currentTime);
+      metalGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.015);
+      
+      metalClick.connect(metalFilter);
+      metalFilter.connect(metalGain);
+      metalGain.connect(audioContext.destination);
+      
+      metalClick.start(audioContext.currentTime);
+      metalClick.stop(audioContext.currentTime + 0.015);
+      
+      // Layer 2: Low "thunk" of the switch mechanism
+      const thunk = audioContext.createOscillator();
+      const thunkGain = audioContext.createGain();
+      const thunkFilter = audioContext.createBiquadFilter();
+      
+      thunk.type = 'sine';
+      thunk.frequency.setValueAtTime(300, audioContext.currentTime + 0.005);
+      thunk.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.04);
+      
+      thunkFilter.type = 'lowpass';
+      thunkFilter.frequency.setValueAtTime(500, audioContext.currentTime);
+      
+      thunkGain.gain.setValueAtTime(0, audioContext.currentTime);
+      thunkGain.gain.setValueAtTime(0.2, audioContext.currentTime + 0.005);
+      thunkGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+      
+      thunk.connect(thunkFilter);
+      thunkFilter.connect(thunkGain);
+      thunkGain.connect(audioContext.destination);
+      
+      thunk.start(audioContext.currentTime);
+      thunk.stop(audioContext.currentTime + 0.05);
+      
+    } catch {
+      // Audio not supported, ignore
+    }
+  }, []);
+
   // Handle play state changes
   useEffect(() => {
     if (!audioRef.current || !state) return;
@@ -160,8 +215,9 @@ export function PhotoWorkbench() {
   }, [playClickSound]);
 
   const toggleLamp = useCallback(() => {
+    playSwitchSound();
     setState(prev => prev ? { ...prev, lampOn: !prev.lampOn } : null);
-  }, []);
+  }, [playSwitchSound]);
 
   const updateStickyNote = useCallback((text: string) => {
     setState(prev => prev ? { ...prev, stickyNote: text } : null);
