@@ -177,6 +177,31 @@ export function ChromeBrowser() {
 
   return (
     <div className="w-full h-screen bg-gray-200 dark:bg-black flex items-center justify-center p-8">
+      {/* Dark Mode Toggle Switch - Outside Browser, Top Right */}
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        className="fixed top-4 right-4 z-50 relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg"
+        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        role="switch"
+        aria-checked={darkMode}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform duration-200 ease-in-out flex items-center justify-center ${
+            darkMode ? 'translate-x-5' : 'translate-x-0'
+          }`}
+        >
+          {darkMode ? (
+            <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </span>
+      </button>
+
       {/* Browser Window with Drop Shadow */}
       <div className="w-full max-w-[92rem] h-full max-h-[90vh] bg-white dark:bg-[#1e1e1e] rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
         {/* Window Chrome */}
@@ -187,33 +212,7 @@ export function ChromeBrowser() {
             <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
             <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
           </div>
-          {/* Dark Mode Toggle Switch - Top Right of Window Chrome */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDarkMode(!darkMode);
-            }}
-            className="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            role="switch"
-            aria-checked={darkMode}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform duration-200 ease-in-out ${
-                darkMode ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            >
-              {darkMode ? (
-                <svg className="w-4 h-4 text-yellow-500 mt-0.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-gray-600 mt-0.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              )}
-            </span>
-          </button>
+          <div className="flex-1"></div>
         </div>
 
         {/* Tabs Bar */}
