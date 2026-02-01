@@ -1,9 +1,9 @@
-import { PhotoWorkbench } from '@/components/PhotoWorkbench';
+import { ChromeBrowser } from '@/components/ChromeBrowser';
 
 export default function LedgerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <PhotoWorkbench />;
+  return <ChromeBrowser />;
 }
