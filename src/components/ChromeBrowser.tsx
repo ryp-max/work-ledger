@@ -46,14 +46,18 @@ export function ChromeBrowser() {
   });
   const omniboxRef = useRef<HTMLInputElement>(null);
 
-  // Save dark mode preference
+  // Apply dark mode class on mount and when it changes
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+  }, [darkMode]);
+
+  // Save dark mode preference
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
   // Keyboard shortcut: Cmd/Ctrl+L focuses omnibox
