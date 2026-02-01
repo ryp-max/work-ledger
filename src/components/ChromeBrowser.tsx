@@ -162,7 +162,16 @@ export function ChromeBrowser() {
   const renderContent = () => {
     switch (activeTab.pageType) {
       case 'newtab':
-        return <NewTabPage onBookmarkClick={handleBookmarkClick} />;
+        return (
+          <NewTabPage 
+            onBookmarkClick={handleBookmarkClick}
+            onOmniboxSubmit={(value) => {
+              setOmniboxValue(value);
+              handleOmniboxSubmit({ preventDefault: () => {} } as React.FormEvent);
+            }}
+            omniboxRef={omniboxRef}
+          />
+        );
       case 'weekly-log':
         return <WeeklyLogPage />;
       case 'photos':

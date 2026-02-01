@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BOOKMARKS } from '../ChromeBrowser';
 
 interface NewTabPageProps {
   onBookmarkClick: (bookmark: typeof BOOKMARKS[0]) => void;
+  onOmniboxSubmit?: (value: string) => void;
+  omniboxRef?: React.RefObject<HTMLInputElement>;
 }
 
 const MICRO_NOTES = [
@@ -21,9 +23,12 @@ const SHORTCUTS = [
   { id: 'guestbook', title: 'Guestbook', icon: '✍️', color: 'from-orange-500 to-orange-600' },
 ];
 
-export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
+export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: externalRef }: NewTabPageProps) {
   const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
   const [showNote, setShowNote] = useState(true);
+  const [searchValue, setSearchValue] = useState('');
+  const internalRef = useRef<HTMLInputElement>(null);
+  const searchRef = externalRef || internalRef;
 
   // Rotate micro-notes every 12 seconds
   useEffect(() => {
@@ -45,6 +50,13 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
     }
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onOmniboxSubmit && searchValue.trim()) {
+      onOmniboxSubmit(searchValue);
+    }
+  };
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-center min-h-[600px] px-8 py-16">
       {/* Maker's Mark Icon */}
@@ -58,20 +70,23 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
 
       {/* Centered Omnibox */}
       <div className="w-full max-w-2xl mb-8">
-        <div className="relative">
+        <form onSubmit={handleSearchSubmit} className="relative">
           <div className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md focus-within:shadow-lg focus-within:border-gray-300 dark:focus-within:border-gray-500 transition-all duration-200 px-6 py-4">
             <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
+              ref={searchRef}
               type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Search or ask…"
               className="flex-1 outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-base bg-transparent"
               autoFocus
             />
             <div className="text-xs text-gray-400 dark:text-gray-600 hidden sm:block">⌘L</div>
           </div>
-        </div>
+        </form>
       </div>
 
       {/* Rotating Micro-Note */}
