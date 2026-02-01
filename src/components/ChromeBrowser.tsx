@@ -19,10 +19,6 @@ export interface Tab {
 
 const DEFAULT_TABS: Tab[] = [
   { id: '1', title: 'New Tab', pageType: 'newtab', url: 'chrome://newtab' },
-  { id: '2', title: 'Weekly Log', pageType: 'weekly-log', url: 'chrome://weekly-log' },
-  { id: '3', title: 'Photos', pageType: 'photos', url: 'chrome://photos' },
-  { id: '4', title: 'Guestbook', pageType: 'guestbook', url: 'chrome://guestbook' },
-  { id: '5', title: 'ChatGPT', pageType: 'chatgpt', url: 'chrome://chatgpt' },
 ];
 
 export const BOOKMARKS = [
@@ -36,7 +32,6 @@ export const BOOKMARKS = [
 export function ChromeBrowser() {
   const [tabs, setTabs] = useState<Tab[]>(DEFAULT_TABS);
   const [activeTabId, setActiveTabId] = useState<string>('1');
-  const [omniboxValue, setOmniboxValue] = useState<string>('');
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -74,8 +69,6 @@ export function ChromeBrowser() {
         const tabIndex = parseInt(e.key) - 1;
         if (tabs[tabIndex]) {
           setActiveTabId(tabs[tabIndex].id);
-          const tab = tabs[tabIndex];
-          setOmniboxValue(tab.url);
         }
       }
     };
@@ -92,7 +85,6 @@ export function ChromeBrowser() {
     };
     setTabs(prev => [...prev, newTab]);
     setActiveTabId(newTab.id);
-    setOmniboxValue(newTab.url);
   }, []);
 
   const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
@@ -108,12 +100,7 @@ export function ChromeBrowser() {
       setTabs(prev => {
         const filtered = prev.filter(t => t.id !== tabId);
         if (filtered.length > 0) {
-          const newActiveId = filtered[filtered.length - 1].id;
-          setActiveTabId(newActiveId);
-          const newActiveTab = filtered.find(t => t.id === newActiveId);
-          if (newActiveTab) {
-            setOmniboxValue(newActiveTab.url);
-          }
+          setActiveTabId(filtered[filtered.length - 1].id);
         }
         return filtered;
       });
@@ -122,15 +109,10 @@ export function ChromeBrowser() {
 
   const switchTab = useCallback((tabId: string) => {
     setActiveTabId(tabId);
-    const tab = tabs.find(t => t.id === tabId);
-    if (tab) {
-      setOmniboxValue(tab.url);
-    }
-  }, [tabs]);
+  }, []);
 
-  const handleOmniboxSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    const input = omniboxValue.trim().toLowerCase();
+  const handleOmniboxSubmit = useCallback((value: string) => {
+    const input = value.trim().toLowerCase();
     
     if (input.includes('chat') || input.includes('gpt') || input === '') {
       addTab('chatgpt', 'chrome://chatgpt', 'ChatGPT');
@@ -144,9 +126,9 @@ export function ChromeBrowser() {
       return;
     }
     
-    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(omniboxValue)}`;
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(value)}`;
     addTab('url', searchUrl, 'Google Search');
-  }, [omniboxValue, addTab]);
+  }, [addTab]);
 
   const handleBookmarkClick = useCallback((bookmark: typeof BOOKMARKS[0]) => {
     if (bookmark.url.startsWith('chrome://')) {
@@ -165,20 +147,7 @@ export function ChromeBrowser() {
         return (
           <NewTabPage 
             onBookmarkClick={handleBookmarkClick}
-            onOmniboxSubmit={(value) => {
-              setOmniboxValue(value);
-              const input = value.trim().toLowerCase();
-              if (input.includes('chat') || input.includes('gpt') || input === '') {
-                addTab('chatgpt', 'chrome://chatgpt', 'ChatGPT');
-              } else if (input.startsWith('http://') || input.startsWith('https://') || 
-                  (input.includes('.') && !input.includes(' '))) {
-                const url = input.startsWith('http') ? input : `https://${input}`;
-                addTab('url', url, new URL(url).hostname);
-              } else {
-                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(value)}`;
-                addTab('url', searchUrl, 'Google Search');
-              }
-            }}
+            onOmniboxSubmit={handleOmniboxSubmit}
             omniboxRef={omniboxRef}
           />
         );
@@ -205,11 +174,11 @@ export function ChromeBrowser() {
   };
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-8 transition-colors duration-300">
+    <div className="w-full h-screen bg-[#F3F4F6] dark:bg-gray-900 flex items-center justify-center p-8 transition-colors duration-300">
       {/* Dark Mode Toggle - Top Right */}
       <button
         onClick={() => setDarkMode(!darkMode)}
-        className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center hover:shadow-md transition-all duration-200"
+        className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center hover:shadow-md transition-all duration-200"
         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {darkMode ? (
@@ -224,59 +193,59 @@ export function ChromeBrowser() {
       </button>
 
       {/* Browser Window */}
-      <div className="w-full max-w-6xl h-full max-h-[85vh] bg-white dark:bg-gray-800 rounded-[20px] shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
-        {/* Tabs Bar - Pill-shaped */}
-        <div className="px-4 pt-3 pb-2 flex items-center gap-2 overflow-x-auto">
-          {tabs.map((tab, index) => (
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-[20px] shadow-2xl flex flex-col overflow-hidden transition-all duration-300"
+        style={{
+          width: 'min(1280px, 92vw)',
+          height: 'min(760px, 86vh)',
+        }}
+      >
+        {/* Window Chrome - Traffic Lights + Tab Strip */}
+        <div className="h-[44px] bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-3">
+          {/* Traffic Lights */}
+          <div className="flex gap-1.5 mr-3">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          </div>
+          
+          {/* Tab Strip */}
+          <div className="flex-1 flex items-center gap-1 overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => switchTab(tab.id)}
+                className={`
+                  group relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap
+                  ${activeTabId === tab.id 
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' 
+                    : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }
+                `}
+              >
+                {tab.title}
+                {tabs.length > 1 && (
+                  <button
+                    onClick={(e) => closeTab(tab.id, e)}
+                    className="ml-2 opacity-0 group-hover:opacity-100 w-4 h-4 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-opacity"
+                  >
+                    ×
+                  </button>
+                )}
+              </button>
+            ))}
             <button
-              key={tab.id}
-              onClick={() => switchTab(tab.id)}
-              className={`
-                group relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-                ${activeTabId === tab.id 
-                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' 
-                  : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                }
-              `}
+              onClick={() => addTab('newtab')}
+              className="ml-1 w-7 h-7 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200"
+              title="New Tab"
             >
-              <span className="relative z-10">{tab.title}</span>
-              {activeTabId === tab.id && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gray-400 dark:bg-gray-500 rounded-full" />
-              )}
-              {tabs.length > 1 && (
-                <button
-                  onClick={(e) => closeTab(tab.id, e)}
-                  className="ml-2 opacity-0 group-hover:opacity-100 w-4 h-4 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-opacity"
-                >
-                  ×
-                </button>
-              )}
+              +
             </button>
-          ))}
-          <button
-            onClick={() => addTab('newtab')}
-            className="ml-auto w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
-            title="New Tab"
-          >
-            +
-          </button>
-        </div>
-
-        {/* Bookmarks Bar - Tag/Chip Style */}
-        <div className="px-4 pb-2 flex items-center gap-2 flex-wrap">
-          {BOOKMARKS.map((bookmark) => (
-            <button
-              key={bookmark.id}
-              onClick={() => handleBookmarkClick(bookmark)}
-              className="px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
-            >
-              {bookmark.icon} {bookmark.title}
-            </button>
-          ))}
+          </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-hidden">
           {renderContent()}
         </div>
       </div>
