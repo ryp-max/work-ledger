@@ -249,6 +249,8 @@ export function ChromeBrowser() {
                 {tabs.length > 1 && (
                   <button
                     onClick={(e) => closeTab(tab.id, e)}
+                    onMouseEnter={() => setIsHoveringInteractive(true)}
+                    onMouseLeave={() => setIsHoveringInteractive(false)}
                     className="ml-2 opacity-0 group-hover:opacity-100 w-4 h-4 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-opacity"
                   >
                     ×
