@@ -28,20 +28,20 @@ body {
   line-height: 1.4;
 }
 
-/* Dim overlay for lamp off state */
+/* Dim overlay for lamp off state - very subtle */
 .dim-overlay {
   background: radial-gradient(
-    ellipse at 75% 35%,
+    ellipse at 80% 30%,
     transparent 0%,
-    rgba(0, 0, 0, 0.3) 40%,
-    rgba(0, 0, 0, 0.6) 100%
+    rgba(0, 0, 0, 0.15) 50%,
+    rgba(0, 0, 0, 0.35) 100%
   );
   transition: opacity 0.5s ease;
 }
 
-/* Vignette effect */
+/* Vignette effect - subtle */
 .vignette {
-  box-shadow: inset 0 0 150px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 100px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* Debug hitbox styling */
