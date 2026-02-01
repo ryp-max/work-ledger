@@ -38,32 +38,15 @@ export function PhotoWorkbench() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editingSticky, editingLeftPage, editingRightPage]);
 
-  // Audio setup
+  // Audio is optional - only set up if file exists
   useEffect(() => {
-    audioRef.current = new Audio('/audio/ambient.mp3');
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.3;
-    
+    // No audio needed for now
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
       }
     };
   }, []);
-
-  // Handle play state changes
-  useEffect(() => {
-    if (!audioRef.current || !state) return;
-    
-    if (state.isPlaying) {
-      audioRef.current.play().catch(() => {
-        // Autoplay blocked, reset state
-        setState(prev => prev ? { ...prev, isPlaying: false } : null);
-      });
-    } else {
-      audioRef.current.pause();
-    }
-  }, [state?.isPlaying]);
 
   const togglePlay = useCallback(() => {
     setState(prev => prev ? { ...prev, isPlaying: !prev.isPlaying } : null);
