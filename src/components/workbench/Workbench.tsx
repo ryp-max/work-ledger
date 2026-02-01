@@ -2,10 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PostItNote } from './PostItNote';
-import { DeskLamp } from './DeskLamp';
-import { ToolRack } from './ToolRack';
+import { DraggableTool } from './DraggableTool';
 import { AddNoteButton } from './AddNoteButton';
-import { PegboardFrame } from './PegboardFrame';
+import { 
+  Lamp, 
+  Pliers, 
+  Screwdriver, 
+  XActo, 
+  Ruler, 
+  PencilCup, 
+  SmallParts,
+  ControlBox 
+} from './tools';
 import { 
   loadWorkbenchState, 
   saveWorkbenchState, 
@@ -14,15 +22,10 @@ import {
   type WorkbenchState 
 } from '@/lib/workbench-store';
 
-interface WorkbenchProps {
-  children?: React.ReactNode;
-}
-
-export function Workbench({ children }: WorkbenchProps) {
+export function Workbench() {
   const [state, setState] = useState<WorkbenchState>({ notes: [], lampOn: true });
   const [maxZIndex, setMaxZIndex] = useState(10);
   const [mounted, setMounted] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(1200);
 
   // Load state on mount
   useEffect(() => {
@@ -30,12 +33,7 @@ export function Workbench({ children }: WorkbenchProps) {
     setState(loaded);
     const maxZ = Math.max(...loaded.notes.map(n => n.zIndex), 10);
     setMaxZIndex(maxZ);
-    setWindowWidth(window.innerWidth);
     setMounted(true);
-
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Save state on change
@@ -77,15 +75,15 @@ export function Workbench({ children }: WorkbenchProps) {
   const addNote = useCallback(() => {
     const colors: PostItNoteType['color'][] = ['yellow', 'pink', 'blue', 'green', 'orange'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const randomRotation = Math.floor(Math.random() * 7) - 3;
+    const randomRotation = Math.floor(Math.random() * 10) - 5;
     
     const newNote: PostItNoteType = {
       id: generateNoteId(),
       content: '',
       color: randomColor,
       position: { 
-        x: 200 + Math.random() * 400, 
-        y: 100 + Math.random() * 200 
+        x: 300 + Math.random() * 400, 
+        y: 200 + Math.random() * 300 
       },
       rotation: randomRotation,
       zIndex: maxZIndex + 1,
@@ -104,87 +102,101 @@ export function Workbench({ children }: WorkbenchProps) {
 
   if (!mounted) {
     return (
-      <div className="w-full h-screen bg-[var(--wood-dark)] flex items-center justify-center">
-        <div className="text-amber-200 font-serif text-xl">Loading workbench...</div>
+      <div className="w-full h-screen bg-[#8b6914] flex items-center justify-center">
+        <div className="text-amber-100 text-xl">Loading workbench...</div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Pegboard wall */}
-      <div className="absolute inset-0 pegboard" style={{ height: '60%' }}>
-        {/* Tool rack */}
-        <ToolRack />
-
-        {/* Decorative frames */}
-        <PegboardFrame title="Certificate" position={{ x: 300, y: 20 }}>
-          <div className="w-36 h-28 bg-gradient-to-br from-green-100 to-green-50 border border-green-300 p-2">
-            <div className="text-[8px] text-green-800 text-center font-serif">
-              <div className="text-xs font-bold mb-1">WORK LEDGER</div>
-              <div>Certificate of</div>
-              <div className="font-bold">Excellence</div>
-              <div className="mt-2 text-green-600">★ ★ ★</div>
-            </div>
-          </div>
-        </PegboardFrame>
-
-        <PegboardFrame title="Award" position={{ x: 480, y: 30 }}>
-          <div className="w-28 h-20 bg-gradient-to-br from-amber-800 to-amber-900 p-2 flex items-center justify-center">
-            <div className="text-[8px] text-amber-200 text-center">
-              <div className="text-xs">🏆</div>
-              <div>Best Work</div>
-              <div>2026</div>
-            </div>
-          </div>
-        </PegboardFrame>
-
-        {/* Post-it notes */}
-        {state.notes.map(note => (
-          <PostItNote
-            key={note.id}
-            note={note}
-            onUpdate={updateNote}
-            onDelete={deleteNote}
-            onBringToFront={bringToFront}
-          />
-        ))}
+    <div className="relative w-full h-screen overflow-hidden wood-surface">
+      {/* Wood stain marks for realism */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="wood-stain absolute w-96 h-96 top-20 left-40" />
+        <div className="wood-stain absolute w-64 h-64 bottom-40 right-60" />
+        <div className="wood-stain absolute w-48 h-48 top-1/2 left-1/4" />
       </div>
 
-      {/* Wooden desk surface */}
+      {/* Scratches/wear marks */}
       <div 
-        className="absolute bottom-0 left-0 right-0 wood-texture"
-        style={{ height: '40%' }}
-      >
-        {/* Desk edge highlight */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-b from-amber-900/50 to-transparent" />
-        
-        {/* Main content area (ledger) */}
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 w-full max-w-3xl px-8">
-          {children}
-        </div>
-      </div>
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(73deg, transparent 30%, rgba(255,255,255,0.05) 30.5%, transparent 31%),
+            linear-gradient(107deg, transparent 60%, rgba(0,0,0,0.03) 60.5%, transparent 61%)
+          `,
+        }}
+      />
 
-      {/* Desk lamps */}
-      <DeskLamp
-        initialPosition={{ x: 50, y: 280 }}
-        isOn={state.lampOn}
-        onToggle={toggleLamp}
-        side="left"
-      />
-      <DeskLamp
-        initialPosition={{ x: windowWidth - 130, y: 280 }}
-        isOn={state.lampOn}
-        onToggle={toggleLamp}
-        side="right"
-      />
+      {/* === TOOLS === */}
+      
+      {/* Control Box (top left) */}
+      <DraggableTool id="control-box" initialPosition={{ x: 30, y: 30 }} zIndex={5}>
+        <ControlBox />
+      </DraggableTool>
+
+      {/* Main Lamp (center top) */}
+      <DraggableTool id="lamp" initialPosition={{ x: 450, y: 80 }} zIndex={15}>
+        <Lamp isOn={state.lampOn} onToggle={toggleLamp} />
+      </DraggableTool>
+
+      {/* Pencil Cup (top right area) */}
+      <DraggableTool id="pencil-cup" initialPosition={{ x: 750, y: 50 }} zIndex={8}>
+        <PencilCup />
+      </DraggableTool>
+
+      {/* Ruler (angled on desk) */}
+      <DraggableTool id="ruler" initialPosition={{ x: 550, y: 400 }} initialRotation={-15} zIndex={6}>
+        <Ruler />
+      </DraggableTool>
+
+      {/* Pliers */}
+      <DraggableTool id="pliers" initialPosition={{ x: 100, y: 250 }} initialRotation={25} zIndex={7}>
+        <Pliers />
+      </DraggableTool>
+
+      {/* Screwdriver */}
+      <DraggableTool id="screwdriver" initialPosition={{ x: 650, y: 280 }} initialRotation={-30} zIndex={6}>
+        <Screwdriver />
+      </DraggableTool>
+
+      {/* X-Acto knife */}
+      <DraggableTool id="xacto" initialPosition={{ x: 350, y: 350 }} initialRotation={45} zIndex={6}>
+        <XActo />
+      </DraggableTool>
+
+      {/* Small parts dish */}
+      <DraggableTool id="small-parts" initialPosition={{ x: 800, y: 200 }} zIndex={5}>
+        <SmallParts />
+      </DraggableTool>
+
+      {/* Extra screwdriver */}
+      <DraggableTool id="screwdriver-2" initialPosition={{ x: 180, y: 450 }} initialRotation={-10} zIndex={6}>
+        <Screwdriver />
+      </DraggableTool>
+
+      {/* Extra pliers */}
+      <DraggableTool id="pliers-2" initialPosition={{ x: 700, y: 500 }} initialRotation={-45} zIndex={7}>
+        <Pliers />
+      </DraggableTool>
+
+      {/* === POST-IT NOTES === */}
+      {state.notes.map(note => (
+        <PostItNote
+          key={note.id}
+          note={note}
+          onUpdate={updateNote}
+          onDelete={deleteNote}
+          onBringToFront={bringToFront}
+        />
+      ))}
 
       {/* Add note button */}
       <AddNoteButton onAdd={addNote} />
 
-      {/* Instructions tooltip */}
-      <div className="fixed bottom-6 left-6 text-xs text-amber-200/60 bg-black/30 px-3 py-2 rounded">
-        <p>💡 Click lamps to toggle • Drag notes around • Double-click to edit</p>
+      {/* Instructions */}
+      <div className="fixed bottom-4 left-4 text-xs text-white/50 bg-black/40 px-3 py-2 rounded backdrop-blur-sm">
+        <p>🔧 Drag tools & notes • 💡 Click lamp to toggle • ✏️ Double-click notes to edit</p>
       </div>
     </div>
   );

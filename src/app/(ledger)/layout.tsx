@@ -5,5 +5,6 @@ export default function LedgerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <Workbench>{children}</Workbench>;
+  // The workbench is now the full experience - no children needed
+  return <Workbench />;
 }

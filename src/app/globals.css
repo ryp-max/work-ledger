@@ -1,56 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* Workbench color palette */
-  --wood-dark: #3d2817;
-  --wood-medium: #5c3d2e;
-  --wood-light: #8b6914;
-  --pegboard: #d4c4a8;
-  --pegboard-hole: #b8a88c;
-  --metal: #6b7280;
-  --metal-dark: #374151;
-  --lamp-light: #fef3c7;
-  --lamp-glow: rgba(254, 243, 199, 0.3);
+  /* Realistic wood colors */
+  --wood-base: #a67c52;
+  --wood-dark: #8b6914;
+  --wood-grain: #7a5c3a;
+  --wood-light: #c9a86c;
+  --wood-stain: rgba(60, 40, 20, 0.3);
+  
+  /* Metal colors */
+  --metal-dark: #3d4148;
+  --metal-mid: #6b7280;
+  --metal-light: #9ca3af;
+  --metal-shine: #d1d5db;
+  
+  /* Lamp */
+  --lamp-body: #2d3436;
+  --lamp-glow: rgba(255, 244, 214, 0.6);
   
   /* Post-it colors */
-  --postit-yellow: #fef08a;
-  --postit-pink: #fda4af;
-  --postit-blue: #93c5fd;
-  --postit-green: #86efac;
-  --postit-orange: #fdba74;
-  
-  /* Paper/ledger colors */
-  --paper: #f8f5f0;
-  --paper-dark: #f0ebe3;
-  --ink: #2c2c2c;
-  --ink-light: #5a5a5a;
-  --ink-muted: #8a8a8a;
-  --stamp: #b85450;
-  --stamp-light: #d4736f;
-  --tape: #e8e4dc;
-  --tape-border: #d4cfc5;
+  --postit-yellow: #fff59d;
+  --postit-pink: #f8bbd9;
+  --postit-blue: #b3e5fc;
+  --postit-green: #c8e6c9;
+  --postit-orange: #ffcc80;
   
   /* Fonts */
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
   --font-handwriting: 'Caveat', cursive;
-  
-  /* Shadows */
-  --shadow-tool: 2px 4px 8px rgba(0, 0, 0, 0.3);
-  --shadow-postit: 2px 2px 6px rgba(0, 0, 0, 0.15);
-  --shadow-lamp: 0 0 60px var(--lamp-glow);
 }
 
 @theme inline {
-  --color-wood-dark: var(--wood-dark);
-  --color-wood-medium: var(--wood-medium);
-  --color-wood-light: var(--wood-light);
-  --color-pegboard: var(--pegboard);
-  --color-metal: var(--metal);
-  --color-paper: var(--paper);
-  --color-ink: var(--ink);
-  --color-stamp: var(--stamp);
+  --color-wood-base: var(--wood-base);
+  --color-metal: var(--metal-mid);
   --font-handwriting: var(--font-handwriting);
 }
 
@@ -63,45 +45,59 @@ html, body {
   padding: 0;
   overflow: hidden;
   height: 100%;
+  width: 100%;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Wood grain texture */
-.wood-texture {
+/* Realistic worn wood texture */
+.wood-surface {
   background: 
+    /* Scratches and wear marks */
+    repeating-linear-gradient(
+      87deg,
+      transparent,
+      transparent 40px,
+      rgba(0,0,0,0.02) 40px,
+      rgba(0,0,0,0.02) 41px
+    ),
+    repeating-linear-gradient(
+      93deg,
+      transparent,
+      transparent 60px,
+      rgba(255,255,255,0.02) 60px,
+      rgba(255,255,255,0.02) 61px
+    ),
+    /* Wood grain lines */
     repeating-linear-gradient(
       90deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    ),
-    linear-gradient(
-      180deg,
-      var(--wood-dark) 0%,
-      var(--wood-medium) 50%,
-      var(--wood-dark) 100%
+      var(--wood-base) 0px,
+      var(--wood-light) 2px,
+      var(--wood-base) 4px,
+      var(--wood-grain) 8px,
+      var(--wood-base) 12px,
+      var(--wood-dark) 14px,
+      var(--wood-base) 18px
     );
+  background-color: var(--wood-base);
 }
 
-/* Pegboard pattern */
-.pegboard {
-  background-color: var(--pegboard);
-  background-image: 
-    radial-gradient(circle, var(--pegboard-hole) 3px, transparent 3px);
-  background-size: 24px 24px;
-  background-position: 12px 12px;
+/* Stain marks on wood */
+.wood-stain {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(60, 40, 20, 0.15) 0%,
+    transparent 70%
+  );
 }
 
 /* Post-it note styling */
 .postit {
   font-family: var(--font-handwriting);
-  box-shadow: var(--shadow-postit);
-  transform-origin: center center;
+  filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.25));
 }
 
 .postit::before {
@@ -110,61 +106,38 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 8px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.05), transparent);
+  height: 6px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08), transparent);
 }
 
-/* Lamp glow effect */
-.lamp-glow {
-  position: absolute;
-  width: 300px;
-  height: 400px;
-  background: radial-gradient(
-    ellipse at top,
-    var(--lamp-glow) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-/* Tool styling */
-.tool {
-  filter: drop-shadow(var(--shadow-tool));
-  transition: transform 0.15s ease;
-}
-
-.tool:hover {
-  transform: scale(1.05);
+/* Tool shadows */
+.tool-shadow {
+  filter: drop-shadow(3px 4px 6px rgba(0,0,0,0.4));
 }
 
 /* Dragging states */
 .dragging {
   cursor: grabbing !important;
   z-index: 1000 !important;
+  transform: scale(1.02);
 }
 
 .draggable {
   cursor: grab;
   touch-action: none;
+  transition: transform 0.1s ease;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--ink-muted);
-  border-radius: 4px;
+.draggable:hover {
+  transform: scale(1.02);
 }
 
 /* Selection */
 ::selection {
-  background: var(--stamp-light);
-  color: white;
+  background: rgba(166, 124, 82, 0.4);
+}
+
+/* Scrollbar - hide it */
+::-webkit-scrollbar {
+  display: none;
 }

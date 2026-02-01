@@ -1,5 +1,5 @@
 // Simple store for workbench state (positions, notes)
-// In production, this would persist to localStorage or a database
+// Persists to localStorage
 
 export interface PostItNote {
   id: string;
@@ -20,27 +20,35 @@ const STORAGE_KEY = 'workbench-state';
 const defaultNotes: PostItNote[] = [
   {
     id: 'note-1',
-    content: 'Week 04 goals:\n- Finish node graph\n- Review PRs',
+    content: 'Week 04 goals:\n• Finish node graph\n• Review PRs\n• Update docs',
     color: 'yellow',
-    position: { x: 150, y: 100 },
-    rotation: -2,
+    position: { x: 120, y: 150 },
+    rotation: -3,
     zIndex: 1,
   },
   {
     id: 'note-2', 
-    content: 'Remember to update the changelog!',
+    content: 'URGENT:\nCall back client\nabout project timeline',
     color: 'pink',
-    position: { x: 320, y: 150 },
-    rotation: 3,
+    position: { x: 280, y: 180 },
+    rotation: 4,
     zIndex: 2,
   },
   {
     id: 'note-3',
-    content: 'Ideas:\n• Better search\n• Dark mode\n• Mobile view',
+    content: 'Ideas:\n• Dark mode\n• Mobile view\n• Export feature',
     color: 'blue',
-    position: { x: 500, y: 80 },
-    rotation: -1,
+    position: { x: 500, y: 220 },
+    rotation: -2,
     zIndex: 3,
+  },
+  {
+    id: 'note-4',
+    content: 'Meeting notes\n9am standup\n2pm design review',
+    color: 'green',
+    position: { x: 380, y: 500 },
+    rotation: 6,
+    zIndex: 4,
   },
 ];
 

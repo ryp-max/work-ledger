@@ -11,11 +11,11 @@ interface PostItNoteProps {
 }
 
 const colorClasses = {
-  yellow: 'bg-[#fef08a]',
-  pink: 'bg-[#fda4af]',
-  blue: 'bg-[#93c5fd]',
-  green: 'bg-[#86efac]',
-  orange: 'bg-[#fdba74]',
+  yellow: 'bg-[#fff59d]',
+  pink: 'bg-[#f8bbd9]',
+  blue: 'bg-[#b3e5fc]',
+  green: 'bg-[#c8e6c9]',
+  orange: 'bg-[#ffcc80]',
 };
 
 export function PostItNote({ note, onUpdate, onDelete, onBringToFront }: PostItNoteProps) {
@@ -23,13 +23,11 @@ export function PostItNote({ note, onUpdate, onDelete, onBringToFront }: PostItN
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(note.content);
   const dragRef = useRef<{ startX: number; startY: number; noteX: number; noteY: number } | null>(null);
-  const noteRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
       textareaRef.current.focus();
-      textareaRef.current.select();
     }
   }, [isEditing]);
 
@@ -79,7 +77,8 @@ export function PostItNote({ note, onUpdate, onDelete, onBringToFront }: PostItN
     };
   }, [isDragging, note.id, onUpdate]);
 
-  const handleDoubleClick = () => {
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsEditing(true);
   };
 
@@ -97,34 +96,34 @@ export function PostItNote({ note, onUpdate, onDelete, onBringToFront }: PostItN
 
   return (
     <div
-      ref={noteRef}
       className={`
-        postit absolute w-44 min-h-44 p-3 rounded-sm
+        postit absolute w-36 min-h-36 p-3 
         ${colorClasses[note.color]}
-        ${isDragging ? 'dragging scale-105' : 'draggable'}
-        transition-shadow duration-150
-        hover:shadow-lg
+        ${isDragging ? 'dragging' : 'draggable'}
       `}
       style={{
         left: note.position.x,
         top: note.position.y,
         transform: `rotate(${note.rotation}deg)`,
         zIndex: note.zIndex,
+        boxShadow: '2px 3px 8px rgba(0,0,0,0.3)',
       }}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
     >
-      {/* Tape effect at top */}
+      {/* Folded corner effect */}
       <div 
-        className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-4 bg-[#e8dcc8] opacity-70 rounded-sm"
-        style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+        className="absolute bottom-0 right-0 w-6 h-6"
+        style={{
+          background: `linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 50%)`,
+        }}
       />
       
       {/* Delete button */}
       <button
-        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full 
+        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full 
                    text-xs flex items-center justify-center opacity-0 hover:opacity-100
-                   transition-opacity shadow-md"
+                   transition-opacity shadow-md hover:bg-red-600"
         onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}
         style={{ zIndex: note.zIndex + 1 }}
       >
@@ -138,22 +137,26 @@ export function PostItNote({ note, onUpdate, onDelete, onBringToFront }: PostItN
           onChange={(e) => setContent(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="w-full h-full min-h-32 bg-transparent border-none outline-none resize-none
-                     font-[var(--font-handwriting)] text-lg text-gray-800 leading-relaxed"
+          className="w-full h-full min-h-28 bg-transparent border-none outline-none resize-none
+                     text-lg text-gray-800 leading-snug"
+          style={{ fontFamily: 'var(--font-handwriting)' }}
           placeholder="Write something..."
         />
       ) : (
-        <p className="font-[var(--font-handwriting)] text-lg text-gray-800 leading-relaxed whitespace-pre-wrap">
-          {note.content || 'Double-click to edit...'}
+        <p 
+          className="text-lg text-gray-800 leading-snug whitespace-pre-wrap"
+          style={{ fontFamily: 'var(--font-handwriting)' }}
+        >
+          {note.content || 'Double-click to edit'}
         </p>
       )}
 
-      {/* Color picker on hover */}
-      <div className="absolute bottom-1 right-1 flex gap-1 opacity-0 hover:opacity-100 transition-opacity">
+      {/* Color picker */}
+      <div className="absolute -bottom-1 left-1 flex gap-1 opacity-0 hover:opacity-100 transition-opacity">
         {(['yellow', 'pink', 'blue', 'green', 'orange'] as const).map((color) => (
           <button
             key={color}
-            className={`w-3 h-3 rounded-full ${colorClasses[color]} border border-gray-400/30`}
+            className={`w-3 h-3 rounded-full ${colorClasses[color]} border border-black/20 hover:scale-125 transition-transform`}
             onClick={(e) => { e.stopPropagation(); onUpdate(note.id, { color }); }}
           />
         ))}
