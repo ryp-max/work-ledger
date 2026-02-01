@@ -26,11 +26,11 @@ const DEFAULT_TABS: Tab[] = [
 ];
 
 export const BOOKMARKS = [
-  { id: 'spotify', title: 'Spotify', url: 'https://open.spotify.com', icon: '🎵', color: 'bg-green-500' },
-  { id: 'blog', title: 'Blog', url: 'chrome://weekly-log', icon: '📝', color: 'bg-blue-500' },
-  { id: 'chatgpt', title: 'ChatGPT', url: 'chrome://chatgpt', icon: '🤖', color: 'bg-green-600' },
-  { id: 'figma', title: 'Figma', url: 'https://figma.com', icon: '🎨', color: 'bg-purple-500' },
-  { id: 'docs', title: 'Docs', url: 'https://docs.google.com', icon: '📄', color: 'bg-blue-600' },
+  { id: 'weekly-log', title: 'Weekly Log', url: 'chrome://weekly-log', icon: '📝' },
+  { id: 'chatgpt', title: 'ChatGPT', url: 'chrome://chatgpt', icon: '🤖' },
+  { id: 'spotify', title: 'Spotify', url: 'https://open.spotify.com', icon: '🎵' },
+  { id: 'photos', title: 'Photos', url: 'chrome://photos', icon: '📷' },
+  { id: 'guestbook', title: 'Guestbook', url: 'chrome://guestbook', icon: '✍️' },
 ];
 
 export function ChromeBrowser() {
@@ -60,7 +60,7 @@ export function ChromeBrowser() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Keyboard shortcut: Cmd/Ctrl+L focuses omnibox
+  // Keyboard shortcuts: ⌘L focuses omnibox, ⌘1-5 switches tabs
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
@@ -68,10 +68,20 @@ export function ChromeBrowser() {
         omniboxRef.current?.focus();
         omniboxRef.current?.select();
       }
+      // Tab switching with ⌘1-5
+      if ((e.metaKey || e.ctrlKey) && e.key >= '1' && e.key <= '5') {
+        e.preventDefault();
+        const tabIndex = parseInt(e.key) - 1;
+        if (tabs[tabIndex]) {
+          setActiveTabId(tabs[tabIndex].id);
+          const tab = tabs[tabIndex];
+          setOmniboxValue(tab.url);
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [tabs]);
 
   const addTab = useCallback((pageType: PageType = 'newtab', url?: string, title?: string) => {
     const newTab: Tab = {
@@ -87,14 +97,13 @@ export function ChromeBrowser() {
 
   const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (tabs.length <= 1) return; // Don't close last tab
+    if (tabs.length <= 1) return;
     
     setTabs(prev => {
       const filtered = prev.filter(t => t.id !== tabId);
       return filtered;
     });
     
-    // If closing active tab, switch to another
     if (tabId === activeTabId) {
       setTabs(prev => {
         const filtered = prev.filter(t => t.id !== tabId);
@@ -123,13 +132,11 @@ export function ChromeBrowser() {
     e.preventDefault();
     const input = omniboxValue.trim().toLowerCase();
     
-    // Handle chat keywords
     if (input.includes('chat') || input.includes('gpt') || input === '') {
       addTab('chatgpt', 'chrome://chatgpt', 'ChatGPT');
       return;
     }
     
-    // Handle URLs
     if (input.startsWith('http://') || input.startsWith('https://') || 
         (input.includes('.') && !input.includes(' '))) {
       const url = input.startsWith('http') ? input : `https://${input}`;
@@ -137,7 +144,6 @@ export function ChromeBrowser() {
       return;
     }
     
-    // Handle search query - open Google search
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(omniboxValue)}`;
     addTab('url', searchUrl, 'Google Search');
   }, [omniboxValue, addTab]);
@@ -180,130 +186,78 @@ export function ChromeBrowser() {
   };
 
   return (
-    <div className="w-full h-screen bg-gray-200 dark:bg-black flex items-center justify-center p-8">
-      {/* Dark Mode Toggle Switch - Outside Browser, Top Right */}
+    <div className="w-full h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-8 transition-colors duration-300">
+      {/* Dark Mode Toggle - Top Right */}
       <button
         onClick={() => setDarkMode(!darkMode)}
-        className="fixed top-4 right-4 z-50 relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg"
+        className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center hover:shadow-md transition-all duration-200"
         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        role="switch"
-        aria-checked={darkMode}
       >
-        <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform duration-200 ease-in-out flex items-center justify-center ${
-            darkMode ? 'translate-x-5' : 'translate-x-0'
-          }`}
-        >
-          {darkMode ? (
-            <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          )}
-        </span>
+        {darkMode ? (
+          <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        )}
       </button>
 
-      {/* Browser Window with Drop Shadow */}
-      <div className="w-full max-w-[92rem] h-full max-h-[90vh] bg-white dark:bg-[#1e1e1e] rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
-        {/* Window Chrome */}
-        <div className="h-8 bg-gray-100 dark:bg-[#2d2d2d] flex items-center justify-between px-3 border-b border-gray-200 dark:border-[#3d3d3d] rounded-t-[24px]">
-          {/* Traffic Lights (macOS style) */}
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
-          </div>
-          <div className="flex-1"></div>
-        </div>
-
-        {/* Tabs Bar */}
-        <div className="bg-gray-100 dark:bg-[#2d2d2d] flex items-end overflow-x-auto border-b border-gray-200 dark:border-[#3d3d3d]">
-          {tabs.map((tab) => (
-            <div
+      {/* Browser Window */}
+      <div className="w-full max-w-6xl h-full max-h-[85vh] bg-white dark:bg-gray-800 rounded-[20px] shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
+        {/* Tabs Bar - Pill-shaped */}
+        <div className="px-4 pt-3 pb-2 flex items-center gap-2 overflow-x-auto">
+          {tabs.map((tab, index) => (
+            <button
               key={tab.id}
               onClick={() => switchTab(tab.id)}
               className={`
-                flex items-center gap-2 px-4 py-2 min-w-[180px] max-w-[240px] cursor-pointer
-                border-t border-l border-r border-gray-300 dark:border-[#3d3d3d] rounded-t-lg transition-colors
+                group relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                 ${activeTabId === tab.id 
-                  ? 'bg-white dark:bg-[#1e1e1e] border-b-white dark:border-b-[#1e1e1e] -mb-px' 
-                  : 'bg-gray-200 dark:bg-[#252525] hover:bg-gray-250 dark:hover:bg-[#2a2a2a] border-b border-gray-300 dark:border-[#3d3d3d]'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' 
+                  : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }
               `}
             >
-              {tab.favicon && (
-                <span className="text-xs">{tab.favicon}</span>
+              <span className="relative z-10">{tab.title}</span>
+              {activeTabId === tab.id && (
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gray-400 dark:bg-gray-500 rounded-full" />
               )}
-              <span className={`flex-1 text-sm truncate ${activeTabId === tab.id ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'}`}>
-                {tab.title}
-              </span>
               {tabs.length > 1 && (
                 <button
                   onClick={(e) => closeTab(tab.id, e)}
-                  className="w-4 h-4 rounded hover:bg-gray-300 dark:hover:bg-[#3d3d3d] flex items-center justify-center text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  className="ml-2 opacity-0 group-hover:opacity-100 w-4 h-4 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-opacity"
                 >
                   ×
                 </button>
               )}
-            </div>
+            </button>
           ))}
-          {/* New Tab Button */}
           <button
             onClick={() => addTab('newtab')}
-            className="w-8 h-8 mx-1 rounded hover:bg-gray-300 dark:hover:bg-[#3d3d3d] flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            className="ml-auto w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
             title="New Tab"
           >
             +
           </button>
         </div>
 
-        {/* Omnibox */}
-        <div className="bg-white dark:bg-[#1e1e1e] border-b border-gray-200 dark:border-[#3d3d3d] px-4 py-2 flex items-center gap-2">
-          <button className="w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-[#2d2d2d] flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title="Back">
-            ←
-          </button>
-          <button className="w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-[#2d2d2d] flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title="Forward">
-            →
-          </button>
-          <button className="w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-[#2d2d2d] flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title="Reload">
-            ↻
-          </button>
-          <form onSubmit={handleOmniboxSubmit} className="flex-1 flex items-center">
-            <div className="flex-1 flex items-center gap-2 bg-gray-50 dark:bg-[#2d2d2d] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#3d3d3d] hover:border-gray-300 dark:hover:border-[#4d4d4d] focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:bg-white dark:focus-within:bg-[#2d2d2d] transition-colors">
-              <span className="text-gray-400 dark:text-gray-500 text-sm">🔒</span>
-              <input
-                ref={omniboxRef}
-                type="text"
-                value={omniboxValue}
-                onChange={(e) => setOmniboxValue(e.target.value)}
-                placeholder="Search Google or type a URL"
-                className="flex-1 bg-transparent text-sm text-gray-900 dark:text-gray-100 outline-none placeholder-gray-400 dark:placeholder-gray-500"
-              />
-            </div>
-          </form>
-        </div>
-
-        {/* Bookmarks Bar */}
-        <div className="bg-white dark:bg-[#1e1e1e] border-b border-gray-200 dark:border-[#3d3d3d] px-4 py-1.5 flex items-center gap-1">
+        {/* Bookmarks Bar - Tag/Chip Style */}
+        <div className="px-4 pb-2 flex items-center gap-2 flex-wrap">
           {BOOKMARKS.map((bookmark) => (
             <button
               key={bookmark.id}
               onClick={() => handleBookmarkClick(bookmark)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#2d2d2d] transition-colors group"
+              className="px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
             >
-              <div className={`w-5 h-5 rounded ${bookmark.color} flex items-center justify-center text-white text-xs`}>
-                {bookmark.icon}
-              </div>
-              <span className="text-xs text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200">{bookmark.title}</span>
+              {bookmark.icon} {bookmark.title}
             </button>
           ))}
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white dark:bg-[#1e1e1e] overflow-auto rounded-b-[24px]">
+        <div className="flex-1 overflow-auto">
           {renderContent()}
         </div>
       </div>

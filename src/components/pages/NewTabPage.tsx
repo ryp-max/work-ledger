@@ -1,124 +1,105 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { BOOKMARKS } from '../ChromeBrowser';
 
 interface NewTabPageProps {
   onBookmarkClick: (bookmark: typeof BOOKMARKS[0]) => void;
 }
 
-const DESIGN_BOOKMARKS = [
-  { id: 'news', title: 'News', icon: 'news' },
-  { id: 'youtube', title: 'Youtube', icon: 'youtube' },
-  { id: 'maps', title: 'Maps', icon: 'maps' },
-  { id: 'gmail', title: 'Gmail', icon: 'gmail' },
-  { id: 'drive', title: 'Drive', icon: 'drive' },
+const MICRO_NOTES = [
+  "This week: Building a personal workspace that feels like home",
+  "This week: Exploring new ways to document the creative process",
+  "This week: Finding calm in the details",
+];
+
+const SHORTCUTS = [
+  { id: 'weekly-log', title: 'Weekly Log', icon: '📝', color: 'from-blue-500 to-blue-600' },
+  { id: 'chatgpt', title: 'ChatGPT', icon: '🤖', color: 'from-green-500 to-green-600' },
+  { id: 'spotify', title: 'Spotify', icon: '🎵', color: 'from-green-400 to-green-500' },
+  { id: 'photos', title: 'Photos', icon: '📷', color: 'from-purple-500 to-purple-600' },
+  { id: 'guestbook', title: 'Guestbook', icon: '✍️', color: 'from-orange-500 to-orange-600' },
 ];
 
 export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
+  const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
+  const [showNote, setShowNote] = useState(true);
+
+  // Rotate micro-notes every 12 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowNote(false);
+      setTimeout(() => {
+        setCurrentNoteIndex((prev) => (prev + 1) % MICRO_NOTES.length);
+        setShowNote(true);
+      }, 300);
+    }, 12000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleShortcutClick = (shortcut: typeof SHORTCUTS[0]) => {
+    const bookmark = BOOKMARKS.find(b => b.id === shortcut.id);
+    if (bookmark) {
+      onBookmarkClick(bookmark);
+    }
+  };
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center min-h-[600px] bg-gray-100 dark:bg-[#1e1e1e]">
-      {/* Search Bar - Centered */}
-      <div className="w-full max-w-2xl mb-16">
-        <div className="flex items-center gap-3 bg-white dark:bg-white rounded-full border border-gray-300 dark:border-gray-300 shadow-sm px-4 py-3">
-          {/* Magnifying glass icon - dark gray */}
-          <svg className="w-5 h-5 text-gray-700 dark:text-gray-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    <div className="w-full h-full flex flex-col items-center justify-center min-h-[600px] px-8 py-16">
+      {/* Maker's Mark Icon */}
+      <div className="mb-8">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-sm">
+          <svg className="w-8 h-8 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          <input
-            type="text"
-            placeholder="Ask me anything"
-            className="flex-1 outline-none text-gray-700 dark:text-gray-700 placeholder-gray-500 dark:placeholder-gray-500 text-base bg-transparent"
-            autoFocus
-          />
-          {/* Microphone icon - multi-colored */}
-          <div className="w-5 h-5 flex-shrink-0">
-            <svg viewBox="0 0 24 24" className="w-full h-full">
-              <path fill="#4285F4" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-              <path fill="#34A853" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </div>
+      </div>
+
+      {/* Centered Omnibox */}
+      <div className="w-full max-w-2xl mb-8">
+        <div className="relative">
+          <div className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md focus-within:shadow-lg focus-within:border-gray-300 dark:focus-within:border-gray-500 transition-all duration-200 px-6 py-4">
+            <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            <input
+              type="text"
+              placeholder="Search or ask…"
+              className="flex-1 outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-base bg-transparent"
+              autoFocus
+            />
+            <div className="text-xs text-gray-400 dark:text-gray-600 hidden sm:block">⌘L</div>
           </div>
         </div>
       </div>
 
-      {/* Quick Access Icons */}
-      <div className="w-full max-w-4xl grid grid-cols-5 gap-8 px-4">
-        {DESIGN_BOOKMARKS.map((bookmark) => (
+      {/* Rotating Micro-Note */}
+      <div className="w-full max-w-2xl mb-12 h-6 flex items-center justify-center">
+        <p className={`text-sm text-gray-500 dark:text-gray-400 transition-opacity duration-300 ${showNote ? 'opacity-100' : 'opacity-0'}`}>
+          {MICRO_NOTES[currentNoteIndex]}
+        </p>
+      </div>
+
+      {/* Shortcuts */}
+      <div className="w-full max-w-3xl grid grid-cols-5 gap-6">
+        {SHORTCUTS.map((shortcut) => (
           <button
-            key={bookmark.id}
-            onClick={() => {
-              const existingBookmark = BOOKMARKS.find(b => b.title.toLowerCase() === bookmark.title.toLowerCase());
-              if (existingBookmark) {
-                onBookmarkClick(existingBookmark);
-              }
-            }}
-            className="flex flex-col items-center gap-2 group"
+            key={shortcut.id}
+            onClick={() => handleShortcutClick(shortcut)}
+            className="group flex flex-col items-center gap-3"
           >
-            {/* News Icon */}
-            {bookmark.icon === 'news' && (
-              <div className="w-16 h-16 rounded-lg bg-white dark:bg-[#2d2d2d] shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
-                <div className="relative w-12 h-12">
-                  <div className="absolute inset-0 bg-blue-500 rounded"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">G</span>
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded shadow-sm flex items-center justify-center">
-                    <div className="w-4 h-4 bg-gray-300 rounded-sm"></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Youtube Icon */}
-            {bookmark.icon === 'youtube' && (
-              <div className="w-16 h-16 rounded-lg bg-white dark:bg-[#2d2d2d] shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-red-600 rounded flex items-center justify-center">
-                  <div className="w-0 h-0 border-l-[8px] border-l-white border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-1"></div>
-                </div>
-              </div>
-            )}
-            
-            {/* Maps Icon */}
-            {bookmark.icon === 'maps' && (
-              <div className="w-16 h-16 rounded-lg bg-white dark:bg-[#2d2d2d] shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
-                <div className="relative w-12 h-12">
-                  <div className="absolute inset-0">
-                    <div className="absolute top-0 left-0 w-6 h-6 bg-red-500 rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-6 h-6 bg-green-500 rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-6 h-6 bg-yellow-500 rounded-bl-lg"></div>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 bg-blue-500 rounded-br-lg"></div>
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Gmail Icon */}
-            {bookmark.icon === 'gmail' && (
-              <div className="w-16 h-16 rounded-lg bg-white dark:bg-[#2d2d2d] shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
-                <div className="relative w-12 h-12">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-white font-bold text-xl">M</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Drive Icon */}
-            {bookmark.icon === 'drive' && (
-              <div className="w-16 h-16 rounded-lg bg-white dark:bg-[#2d2d2d] shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
-                <div className="relative w-12 h-12">
-                  <div className="absolute top-0 left-0 w-6 h-6 bg-green-500 rounded-tl-lg"></div>
-                  <div className="absolute top-0 right-0 w-6 h-6 bg-yellow-500 rounded-tr-lg"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 bg-blue-500 rounded-bl-lg"></div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-400 rounded-br-lg"></div>
-                </div>
-              </div>
-            )}
-            
-            <span className="text-sm text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 font-normal">{bookmark.title}</span>
+            <div className={`
+              w-14 h-14 rounded-2xl bg-gradient-to-br ${shortcut.color} 
+              flex items-center justify-center text-white text-2xl
+              shadow-sm group-hover:shadow-md group-hover:scale-105
+              transition-all duration-200
+            `}>
+              {shortcut.icon}
+            </div>
+            <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors duration-200">
+              {shortcut.title}
+            </span>
           </button>
         ))}
       </div>
