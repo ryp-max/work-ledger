@@ -1,10 +1,9 @@
-import { Workbench } from '@/components/workbench';
+import { PhotoWorkbench } from '@/components/PhotoWorkbench';
 
 export default function LedgerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // The workbench is now the full experience - no children needed
-  return <Workbench />;
+  return <PhotoWorkbench />;
 }

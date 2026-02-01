@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { CommandPalette } from "@/components/CommandPalette";
 
 export const metadata: Metadata = {
   title: "Work Ledger",
-  description: "A craftsman's journal with a wooden workbench aesthetic",
+  description: "A personal work journal on a craftsman's workbench",
 };
 
 export default function RootLayout({
@@ -14,9 +13,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased overflow-hidden">
+      <body className="antialiased">
         {children}
-        <CommandPalette />
       </body>
     </html>
   );

@@ -1,84 +1,64 @@
-// Simple store for workbench state (positions, notes)
-// Persists to localStorage
+// Persistence for the photo-based UI
 
-export interface PostItNote {
+export interface LedgerEntry {
   id: string;
-  content: string;
-  color: 'yellow' | 'pink' | 'blue' | 'green' | 'orange';
-  position: { x: number; y: number };
-  rotation: number;
-  zIndex: number;
+  date: string;
+  leftPage: string;
+  rightPage: string;
 }
 
 export interface WorkbenchState {
-  notes: PostItNote[];
+  stickyNote: string;
+  ledgerEntries: LedgerEntry[];
+  currentMonth: number; // 0-11
   lampOn: boolean;
+  isPlaying: boolean;
 }
 
-const STORAGE_KEY = 'workbench-state';
+const STORAGE_KEY = 'work-ledger-state';
 
-const defaultNotes: PostItNote[] = [
-  {
-    id: 'note-1',
-    content: 'Week 04 goals:\n• Finish node graph\n• Review PRs\n• Update docs',
-    color: 'yellow',
-    position: { x: 120, y: 150 },
-    rotation: -3,
-    zIndex: 1,
-  },
-  {
-    id: 'note-2', 
-    content: 'URGENT:\nCall back client\nabout project timeline',
-    color: 'pink',
-    position: { x: 280, y: 180 },
-    rotation: 4,
-    zIndex: 2,
-  },
-  {
-    id: 'note-3',
-    content: 'Ideas:\n• Dark mode\n• Mobile view\n• Export feature',
-    color: 'blue',
-    position: { x: 500, y: 220 },
-    rotation: -2,
-    zIndex: 3,
-  },
-  {
-    id: 'note-4',
-    content: 'Meeting notes\n9am standup\n2pm design review',
-    color: 'green',
-    position: { x: 380, y: 500 },
-    rotation: 6,
-    zIndex: 4,
-  },
-];
+const defaultState: WorkbenchState = {
+  stickyNote: '',
+  ledgerEntries: [
+    {
+      id: 'jan-week-1',
+      date: 'January Week 1',
+      leftPage: '',
+      rightPage: '',
+    }
+  ],
+  currentMonth: 0,
+  lampOn: true,
+  isPlaying: false,
+};
 
-export function loadWorkbenchState(): WorkbenchState {
+export function loadState(): WorkbenchState {
   if (typeof window === 'undefined') {
-    return { notes: defaultNotes, lampOn: true };
+    return defaultState;
   }
   
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      return { ...defaultState, ...JSON.parse(stored) };
     }
   } catch (e) {
-    console.error('Failed to load workbench state:', e);
+    console.error('Failed to load state:', e);
   }
   
-  return { notes: defaultNotes, lampOn: true };
+  return defaultState;
 }
 
-export function saveWorkbenchState(state: WorkbenchState): void {
+export function saveState(state: WorkbenchState): void {
   if (typeof window === 'undefined') return;
   
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
-    console.error('Failed to save workbench state:', e);
+    console.error('Failed to save state:', e);
   }
 }
 
-export function generateNoteId(): string {
-  return `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+export function getCurrentEntry(state: WorkbenchState): LedgerEntry {
+  return state.ledgerEntries[0] || defaultState.ledgerEntries[0];
 }
