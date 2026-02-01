@@ -38,15 +38,33 @@ export function PhotoWorkbench() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editingSticky, editingLeftPage, editingRightPage]);
 
-  // Audio is optional - only set up if file exists
+  // Audio setup - play overdrive.mp3
   useEffect(() => {
-    // No audio needed for now
+    audioRef.current = new Audio('/audio/overdrive.mp3');
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.5;
+    
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current = null;
       }
     };
   }, []);
+
+  // Handle play state changes
+  useEffect(() => {
+    if (!audioRef.current || !state) return;
+    
+    if (state.isPlaying) {
+      audioRef.current.play().catch(() => {
+        // Autoplay blocked by browser, reset state
+        setState(prev => prev ? { ...prev, isPlaying: false } : null);
+      });
+    } else {
+      audioRef.current.pause();
+    }
+  }, [state?.isPlaying]);
 
   const togglePlay = useCallback(() => {
     setState(prev => prev ? { ...prev, isPlaying: !prev.isPlaying } : null);
