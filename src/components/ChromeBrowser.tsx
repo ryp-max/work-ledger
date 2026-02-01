@@ -159,11 +159,11 @@ export function ChromeBrowser() {
   };
 
   return (
-    <div className="w-full h-screen bg-gray-200 flex items-center justify-center p-8">
+    <div className="w-full h-screen bg-[#f8f9fa] flex items-center justify-center p-2">
       {/* Browser Window with Drop Shadow */}
-      <div className="w-full max-w-7xl h-full max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="w-full h-full max-w-[1920px] bg-white rounded-lg shadow-lg flex flex-col overflow-hidden">
         {/* Window Chrome */}
-        <div className="h-8 bg-gray-100 flex items-center justify-between px-3 border-b border-gray-200 rounded-t-2xl">
+        <div className="h-[34px] bg-[#f1f3f4] flex items-center justify-between px-2 border-b border-[#dadce0] rounded-t-lg">
           {/* Traffic Lights (macOS style) */}
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
@@ -174,30 +174,30 @@ export function ChromeBrowser() {
         </div>
 
         {/* Tabs Bar */}
-        <div className="bg-gray-100 flex items-end overflow-x-auto border-b border-gray-200">
+        <div className="bg-[#f1f3f4] flex items-end overflow-x-auto border-b border-[#dadce0] h-[36px]">
           {tabs.map((tab) => (
             <div
               key={tab.id}
               onClick={() => switchTab(tab.id)}
               className={`
-                flex items-center gap-2 px-4 py-2 min-w-[180px] max-w-[240px] cursor-pointer
-                border-t border-l border-r border-gray-300 rounded-t-lg transition-colors
+                flex items-center gap-2 px-4 h-[36px] min-w-[180px] max-w-[240px] cursor-pointer
+                border-t border-l border-r border-[#dadce0] rounded-t-lg transition-colors
                 ${activeTabId === tab.id 
-                  ? 'bg-white border-b-white -mb-px' 
-                  : 'bg-gray-200 hover:bg-gray-250 border-b border-gray-300'
+                  ? 'bg-white border-b-white -mb-px z-10' 
+                  : 'bg-[#e8eaed] hover:bg-[#dadce0] border-b border-[#dadce0]'
                 }
               `}
             >
               {tab.favicon && (
                 <span className="text-xs">{tab.favicon}</span>
               )}
-              <span className={`flex-1 text-sm truncate ${activeTabId === tab.id ? 'text-gray-900' : 'text-gray-600'}`}>
+              <span className={`flex-1 text-[13px] truncate font-normal ${activeTabId === tab.id ? 'text-[#202124]' : 'text-[#5f6368]'}`}>
                 {tab.title}
               </span>
               {tabs.length > 1 && (
                 <button
                   onClick={(e) => closeTab(tab.id, e)}
-                  className="w-4 h-4 rounded hover:bg-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                  className="w-4 h-4 rounded-full hover:bg-[#dadce0] flex items-center justify-center text-[#5f6368] hover:text-[#202124] transition-colors text-[16px] leading-none"
                 >
                   ×
                 </button>
@@ -207,7 +207,7 @@ export function ChromeBrowser() {
           {/* New Tab Button */}
           <button
             onClick={() => addTab('newtab')}
-            className="w-8 h-8 mx-1 rounded hover:bg-gray-300 flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+            className="w-8 h-8 mx-1 rounded-full hover:bg-[#dadce0] flex items-center justify-center text-[#5f6368] hover:text-[#202124] transition-colors text-xl"
             title="New Tab"
           >
             +
@@ -215,49 +215,57 @@ export function ChromeBrowser() {
         </div>
 
         {/* Omnibox */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2">
-          <button className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors" title="Back">
-            ←
+        <div className="bg-white border-b border-[#dadce0] px-2 py-1 flex items-center gap-1 h-[48px]">
+          <button className="w-8 h-8 rounded-full hover:bg-[#f1f3f4] flex items-center justify-center text-[#5f6368] hover:text-[#202124] transition-colors" title="Back">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-          <button className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors" title="Forward">
-            →
+          <button className="w-8 h-8 rounded-full hover:bg-[#f1f3f4] flex items-center justify-center text-[#5f6368] hover:text-[#202124] transition-colors" title="Forward">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
-          <button className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors" title="Reload">
-            ↻
+          <button className="w-8 h-8 rounded-full hover:bg-[#f1f3f4] flex items-center justify-center text-[#5f6368] hover:text-[#202124] transition-colors" title="Reload">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
           </button>
-          <form onSubmit={handleOmniboxSubmit} className="flex-1 flex items-center">
-            <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2 border border-gray-200 hover:border-gray-300 focus-within:border-blue-500 focus-within:bg-white transition-colors">
-              <span className="text-gray-400 text-sm">🔒</span>
+          <form onSubmit={handleOmniboxSubmit} className="flex-1 flex items-center mx-2">
+            <div className="flex-1 flex items-center gap-3 bg-[#f1f3f4] rounded-full px-4 h-[36px] border border-transparent hover:bg-white hover:shadow-sm focus-within:bg-white focus-within:shadow-md transition-all">
+              <svg className="w-5 h-5 text-[#9aa0a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <input
                 ref={omniboxRef}
                 type="text"
                 value={omniboxValue}
                 onChange={(e) => setOmniboxValue(e.target.value)}
                 placeholder="Search Google or type a URL"
-                className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder-gray-400"
+                className="flex-1 bg-transparent text-[14px] text-[#202124] outline-none placeholder-[#9aa0a6]"
               />
             </div>
           </form>
         </div>
 
         {/* Bookmarks Bar */}
-        <div className="bg-white border-b border-gray-200 px-4 py-1.5 flex items-center gap-1">
+        <div className="bg-white border-b border-[#dadce0] px-2 py-1 flex items-center gap-1 h-[32px]">
           {BOOKMARKS.map((bookmark) => (
             <button
               key={bookmark.id}
               onClick={() => handleBookmarkClick(bookmark)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors group"
+              className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[#f1f3f4] transition-colors group"
             >
-              <div className={`w-5 h-5 rounded ${bookmark.color} flex items-center justify-center text-white text-xs`}>
+              <div className={`w-5 h-5 rounded-full ${bookmark.color} flex items-center justify-center text-white text-xs shadow-sm`}>
                 {bookmark.icon}
               </div>
-              <span className="text-xs text-gray-700 group-hover:text-gray-900">{bookmark.title}</span>
+              <span className="text-[13px] text-[#5f6368] group-hover:text-[#202124]">{bookmark.title}</span>
             </button>
           ))}
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white overflow-auto rounded-b-2xl">
+        <div className="flex-1 bg-white overflow-auto rounded-b-lg">
           {renderContent()}
         </div>
       </div>
