@@ -4,7 +4,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 
 export const metadata: Metadata = {
   title: "Work Ledger",
-  description: "A personal work journal with a calm ledger notebook aesthetic",
+  description: "A craftsman's journal with a wooden workbench aesthetic",
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased overflow-hidden">
         {children}
         <CommandPalette />
       </body>
