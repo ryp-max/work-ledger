@@ -6,7 +6,7 @@ import { BOOKMARKS } from '../ChromeBrowser';
 interface NewTabPageProps {
   onBookmarkClick: (bookmark: typeof BOOKMARKS[0]) => void;
   onOmniboxSubmit?: (value: string) => void;
-  omniboxRef?: React.RefObject<HTMLInputElement>;
+  omniboxRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 const MICRO_NOTES = [
