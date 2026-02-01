@@ -15,6 +15,7 @@ export function PhotoWorkbench() {
   const [isClicking, setIsClicking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const clickSoundRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load state on mount - ensure lamp is ON by default
@@ -70,21 +71,37 @@ export function PhotoWorkbench() {
     audioRef.current.loop = true;
     audioRef.current.volume = 0.5;
     
-    // Create click sound using Web Audio API (mechanical click)
-    clickSoundRef.current = null; // Will use Web Audio instead
+    // Initialize AudioContext for sound effects
+    try {
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioContextRef.current = new AudioContextClass();
+    } catch (e) {
+      console.warn('AudioContext not supported:', e);
+    }
     
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
     };
   }, []);
 
   // Play a cassette tape mechanical button click sound
-  const playClickSound = useCallback(() => {
+  const playClickSound = useCallback(async () => {
+    if (!audioContextRef.current) return;
+    
     try {
-      const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      const audioContext = audioContextRef.current;
+      
+      // Resume audio context if suspended (browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
       
       // Create plastic cassette button "clunk" sound
       // Layer 1: Initial plastic impact (low thud)
@@ -156,15 +173,22 @@ export function PhotoWorkbench() {
       noiseGain.connect(audioContext.destination);
       
       noise.start(audioContext.currentTime);
-    } catch {
-      // Audio not supported, ignore
+    } catch (e) {
+      console.warn('Failed to play click sound:', e);
     }
   }, []);
 
   // Play a lamp switch toggle sound (metal/plastic toggle switch)
-  const playSwitchSound = useCallback(() => {
+  const playSwitchSound = useCallback(async () => {
+    if (!audioContextRef.current) return;
+    
     try {
-      const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      const audioContext = audioContextRef.current;
+      
+      // Resume audio context if suspended
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
       
       // Layer 1: Sharp metallic click
       const metalClick = audioContext.createOscillator();
@@ -211,8 +235,8 @@ export function PhotoWorkbench() {
       thunk.start(audioContext.currentTime);
       thunk.stop(audioContext.currentTime + 0.05);
       
-    } catch {
-      // Audio not supported, ignore
+    } catch (e) {
+      console.warn('Failed to play switch sound:', e);
     }
   }, []);
 
