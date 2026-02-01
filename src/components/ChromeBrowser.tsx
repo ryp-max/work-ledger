@@ -174,7 +174,7 @@ export function ChromeBrowser() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#F3F4F6] dark:bg-gray-900 flex items-center justify-center p-8 transition-colors duration-300">
+    <div className="w-full h-screen bg-[#F3F4F6] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
       {/* Dark Mode Toggle - Top Right */}
       <button
         onClick={() => setDarkMode(!darkMode)}
