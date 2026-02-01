@@ -135,28 +135,7 @@ export function PhotoWorkbench() {
       {/* === HITBOX OVERLAY LAYER === */}
       <div className="absolute inset-0">
         
-        {/* WALKMAN PLAY BUTTON - positioned over the orange button */}
-        <button
-          onClick={togglePlay}
-          className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
-          data-label="Play/Pause"
-          style={{
-            left: '14%',
-            top: '63%',
-            width: '9%',
-            height: '7%',
-          }}
-          title={state.isPlaying ? 'Pause' : 'Play'}
-        >
-          {/* Subtle overlay indicator when playing */}
-          {state.isPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 bg-orange-500 rounded-full play-indicator" />
-            </div>
-          )}
-        </button>
-
-        {/* WALKMAN BODY - larger click area */}
+        {/* WALKMAN BODY - larger hover area (behind play button) */}
         <div
           className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Walkman"
@@ -165,6 +144,7 @@ export function PhotoWorkbench() {
             top: '52%',
             width: '20%',
             height: '24%',
+            zIndex: 1,
           }}
           onMouseEnter={() => setShowPlayStatus(true)}
           onMouseLeave={() => setShowPlayStatus(false)}
@@ -177,38 +157,49 @@ export function PhotoWorkbench() {
           )}
         </div>
 
-        {/* LAMP SWITCH - positioned over the lamp switch */}
+        {/* WALKMAN PLAY BUTTON - positioned over the orange button (on top) */}
+        <button
+          onClick={togglePlay}
+          className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
+          data-label="Play/Pause"
+          style={{
+            left: '14%',
+            top: '63%',
+            width: '9%',
+            height: '7%',
+            zIndex: 10,
+          }}
+          title={state.isPlaying ? 'Pause' : 'Play'}
+        >
+          {/* Subtle overlay indicator when playing */}
+          {state.isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-2 h-2 bg-orange-500 rounded-full play-indicator" />
+            </div>
+          )}
+        </button>
+
+        {/* LAMP HEAD - clickable to toggle lamp */}
         <button
           onClick={toggleLamp}
           className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
-          data-label="Lamp Switch"
-          style={{
-            left: '84%',
-            top: '26%',
-            width: '6%',
-            height: '4%',
-          }}
-          title={state.lampOn ? 'Turn off lamp' : 'Turn on lamp'}
-        >
-          {/* Subtle lamp state indicator */}
-          <div 
-            className={`absolute bottom-0 right-0 w-2 h-2 rounded-full transition-colors ${
-              state.lampOn ? 'bg-yellow-400/60' : 'bg-gray-600/40'
-            }`}
-          />
-        </button>
-
-        {/* LAMP HEAD - larger decorative area */}
-        <div
-          className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
-          data-label="Lamp Head"
+          data-label="Lamp"
           style={{
             left: '77%',
             top: '8%',
             width: '23%',
             height: '32%',
+            zIndex: 5,
           }}
-        />
+          title={state.lampOn ? 'Turn off lamp' : 'Turn on lamp'}
+        >
+          {/* Lamp state indicator */}
+          <div 
+            className={`absolute top-2 right-2 w-3 h-3 rounded-full transition-all ${
+              state.lampOn ? 'bg-yellow-400 shadow-lg shadow-yellow-400/50' : 'bg-gray-600/40'
+            }`}
+          />
+        </button>
 
         {/* STICKY NOTE - editable */}
         <div
