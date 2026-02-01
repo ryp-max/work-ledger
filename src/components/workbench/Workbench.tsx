@@ -12,7 +12,8 @@ import {
   Ruler, 
   PencilCup, 
   SmallParts,
-  ControlBox 
+  ControlBox,
+  CassetteTape
 } from './tools';
 import { 
   loadWorkbenchState, 
@@ -178,6 +179,15 @@ export function Workbench() {
       {/* Extra pliers */}
       <DraggableTool id="pliers-2" initialPosition={{ x: 700, y: 500 }} initialRotation={-45} zIndex={7}>
         <Pliers />
+      </DraggableTool>
+
+      {/* Cassette Tape - TWS Overdrive */}
+      <DraggableTool id="cassette" initialPosition={{ x: 850, y: 320 }} initialRotation={-5} zIndex={12}>
+        <CassetteTape 
+          track="Overdrive" 
+          artist="TWS" 
+          audioSrc="/audio/overdrive.mp3"
+        />
       </DraggableTool>
 
       {/* === POST-IT NOTES === */}

@@ -6,3 +6,4 @@ export { Ruler } from './Ruler';
 export { PencilCup } from './PencilCup';
 export { SmallParts } from './SmallParts';
 export { ControlBox } from './ControlBox';
+export { CassetteTape } from './CassetteTape';
