@@ -115,3 +115,38 @@ body {
 ::selection {
   background: rgba(139, 90, 43, 0.3);
 }
+
+/* Custom cursor - hide default */
+* {
+  cursor: none !important;
+}
+
+/* Custom circle cursor */
+.custom-cursor {
+  position: fixed;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  mix-blend-mode: difference;
+}
+
+/* Cursor hover state - larger with fill */
+.custom-cursor.hovering {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(255, 200, 100, 0.9);
+  background-color: rgba(255, 200, 100, 0.15);
+}
+
+/* Cursor clicking state */
+.custom-cursor.clicking {
+  width: 32px;
+  height: 32px;
+  border-color: rgba(255, 255, 255, 1);
+  background-color: rgba(255, 255, 255, 0.3);
+}

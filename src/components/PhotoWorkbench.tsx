@@ -10,6 +10,9 @@ export function PhotoWorkbench() {
   const [editingLeftPage, setEditingLeftPage] = useState(false);
   const [editingRightPage, setEditingRightPage] = useState(false);
   const [showPlayStatus, setShowPlayStatus] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const clickSoundRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,6 +43,26 @@ export function PhotoWorkbench() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editingSticky, editingLeftPage, editingRightPage]);
+
+  // Custom cursor tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPos({ x: e.clientX, y: e.clientY });
+    };
+    
+    const handleMouseDown = () => setIsClicking(true);
+    const handleMouseUp = () => setIsClicking(false);
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   // Audio setup - play overdrive.mp3 and click sound
   useEffect(() => {
@@ -303,7 +326,9 @@ export function PhotoWorkbench() {
         {/* WALKMAN PLAY BUTTON - positioned over the orange button (on top) */}
         <button
           onClick={togglePlay}
-          className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Play/Pause"
           style={{
             left: '14%',
@@ -325,7 +350,9 @@ export function PhotoWorkbench() {
         {/* LAMP HEAD - clickable to toggle lamp */}
         <button
           onClick={toggleLamp}
-          className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Lamp"
           style={{
             left: '77%',
@@ -529,6 +556,15 @@ export function PhotoWorkbench() {
       <div className="fixed bottom-4 right-4 text-[10px] text-white/30 text-right">
         <p>Press D for debug view</p>
       </div>
+
+      {/* Custom circle cursor */}
+      <div 
+        className={`custom-cursor ${isHovering ? 'hovering' : ''} ${isClicking ? 'clicking' : ''}`}
+        style={{
+          left: cursorPos.x,
+          top: cursorPos.y,
+        }}
+      />
     </div>
   );
 }
