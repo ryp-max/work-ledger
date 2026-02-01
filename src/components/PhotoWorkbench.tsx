@@ -123,10 +123,10 @@ export function PhotoWorkbench() {
           className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Play/Pause"
           style={{
-            left: '8%',
-            top: '48%',
-            width: '4%',
-            height: '6%',
+            left: '14%',
+            top: '55%',
+            width: '9%',
+            height: '7%',
           }}
           title={state.isPlaying ? 'Pause' : 'Play'}
         >
@@ -143,10 +143,10 @@ export function PhotoWorkbench() {
           className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Walkman"
           style={{
-            left: '3%',
-            top: '38%',
-            width: '12%',
-            height: '20%',
+            left: '6%',
+            top: '44%',
+            width: '20%',
+            height: '24%',
           }}
           onMouseEnter={() => setShowPlayStatus(true)}
           onMouseLeave={() => setShowPlayStatus(false)}
@@ -159,35 +159,47 @@ export function PhotoWorkbench() {
           )}
         </div>
 
-        {/* LAMP SWITCH - positioned over the lamp */}
+        {/* LAMP SWITCH - positioned over the lamp switch */}
         <button
           onClick={toggleLamp}
           className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Lamp Switch"
           style={{
-            left: '78%',
+            left: '84%',
             top: '18%',
-            width: '8%',
-            height: '25%',
+            width: '6%',
+            height: '4%',
           }}
           title={state.lampOn ? 'Turn off lamp' : 'Turn on lamp'}
         >
           {/* Subtle lamp state indicator */}
           <div 
-            className={`absolute bottom-2 right-2 w-2 h-2 rounded-full transition-colors ${
+            className={`absolute bottom-0 right-0 w-2 h-2 rounded-full transition-colors ${
               state.lampOn ? 'bg-yellow-400/60' : 'bg-gray-600/40'
             }`}
           />
         </button>
+
+        {/* LAMP HEAD - larger decorative area */}
+        <div
+          className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
+          data-label="Lamp Head"
+          style={{
+            left: '77%',
+            top: '0%',
+            width: '23%',
+            height: '32%',
+          }}
+        />
 
         {/* STICKY NOTE - editable */}
         <div
           className={`absolute cursor-text ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Sticky Note"
           style={{
-            left: '52%',
-            top: '8%',
-            width: '10%',
+            left: '62%',
+            top: '6%',
+            width: '12%',
             height: '12%',
           }}
           onClick={() => setEditingSticky(true)}
@@ -221,10 +233,10 @@ export function PhotoWorkbench() {
           className={`absolute cursor-text ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Left Page"
           style={{
-            left: '24%',
-            top: '32%',
-            width: '20%',
-            height: '40%',
+            left: '31%',
+            top: '26%',
+            width: '25%',
+            height: '46%',
           }}
           onClick={() => setEditingLeftPage(true)}
         >
@@ -258,10 +270,10 @@ export function PhotoWorkbench() {
           className={`absolute cursor-text ${debugMode ? 'debug-hitbox' : ''}`}
           data-label="Right Page"
           style={{
-            left: '48%',
-            top: '32%',
-            width: '20%',
-            height: '40%',
+            left: '56%',
+            top: '26%',
+            width: '25%',
+            height: '46%',
           }}
           onClick={() => setEditingRightPage(true)}
         >
@@ -290,38 +302,67 @@ export function PhotoWorkbench() {
           )}
         </div>
 
-        {/* MONTH TABS - on the right side of ledger */}
-        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((month, i) => (
-          <button
-            key={month}
-            className={`absolute cursor-pointer ${debugMode ? 'debug-hitbox' : ''}`}
-            data-label={month}
-            style={{
-              left: '68%',
-              top: `${35 + i * 6}%`,
-              width: '3%',
-              height: '5%',
-            }}
-            onClick={() => setState(prev => prev ? { ...prev, currentMonth: i } : null)}
-            title={`Go to ${month}`}
-          >
-            {state.currentMonth === i && (
-              <div className="absolute inset-0 bg-amber-200/20 rounded-r" />
-            )}
-          </button>
-        ))}
-
-        {/* POLAROIDS on right page - decorative but could be clickable */}
+        {/* MONTH TABS - top tabs on ledger */}
         <div
           className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
-          data-label="Polaroids"
+          data-label="Month Tabs (Top)"
           style={{
-            left: '54%',
-            top: '38%',
-            width: '12%',
+            left: '68%',
+            top: '24%',
+            width: '20%',
+            height: '5%',
+          }}
+        >
+          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((month, i) => (
+            <button
+              key={month}
+              className="absolute cursor-pointer hover:bg-amber-200/10"
+              style={{
+                left: `${i * 16.6}%`,
+                top: '0',
+                width: '16.6%',
+                height: '100%',
+              }}
+              onClick={() => setState(prev => prev ? { ...prev, currentMonth: i } : null)}
+              title={`Go to ${month}`}
+            >
+              {state.currentMonth === i && (
+                <div className="absolute inset-0 bg-amber-200/20 rounded-t" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* MONTH TABS - side tabs on ledger */}
+        <div
+          className={`absolute ${debugMode ? 'debug-hitbox' : ''}`}
+          data-label="Month Tabs (Side)"
+          style={{
+            left: '79%',
+            top: '25%',
+            width: '4%',
             height: '28%',
           }}
-        />
+        >
+          {['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, i) => (
+            <button
+              key={month}
+              className="absolute cursor-pointer hover:bg-amber-200/10"
+              style={{
+                left: '0',
+                top: `${i * 16.6}%`,
+                width: '100%',
+                height: '16.6%',
+              }}
+              onClick={() => setState(prev => prev ? { ...prev, currentMonth: i + 6 } : null)}
+              title={`Go to ${month}`}
+            >
+              {state.currentMonth === i + 6 && (
+                <div className="absolute inset-0 bg-amber-200/20 rounded-r" />
+              )}
+            </button>
+          ))}
+        </div>
 
       </div>
 
