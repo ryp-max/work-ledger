@@ -97,82 +97,83 @@ export function PhotoWorkbench() {
     
     try {
       const audioContext = audioContextRef.current;
+      const now = audioContext.currentTime;
       
       // Resume audio context if suspended (browser autoplay policy)
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
       
-      // Create plastic cassette button "clunk" sound
-      // Layer 1: Initial plastic impact (low thud)
-      const thud = audioContext.createOscillator();
-      const thudGain = audioContext.createGain();
-      const thudFilter = audioContext.createBiquadFilter();
-      
-      thud.type = 'square';
-      thud.frequency.setValueAtTime(150, audioContext.currentTime);
-      thud.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 0.03);
-      
-      thudFilter.type = 'lowpass';
-      thudFilter.frequency.setValueAtTime(400, audioContext.currentTime);
-      
-      thudGain.gain.setValueAtTime(0.4, audioContext.currentTime);
-      thudGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.06);
-      
-      thud.connect(thudFilter);
-      thudFilter.connect(thudGain);
-      thudGain.connect(audioContext.destination);
-      
-      thud.start(audioContext.currentTime);
-      thud.stop(audioContext.currentTime + 0.06);
-      
-      // Layer 2: High plastic click
+      // Layer 1: Sharp mechanical click (the button mechanism engaging)
       const click = audioContext.createOscillator();
       const clickGain = audioContext.createGain();
       const clickFilter = audioContext.createBiquadFilter();
       
-      click.type = 'square';
-      click.frequency.setValueAtTime(2500, audioContext.currentTime);
-      click.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.015);
+      click.type = 'sine';
+      click.frequency.setValueAtTime(2000, now);
+      click.frequency.exponentialRampToValueAtTime(1200, now + 0.008);
       
-      clickFilter.type = 'highpass';
-      clickFilter.frequency.setValueAtTime(1000, audioContext.currentTime);
+      clickFilter.type = 'bandpass';
+      clickFilter.frequency.setValueAtTime(1800, now);
+      clickFilter.Q.setValueAtTime(5, now);
       
-      clickGain.gain.setValueAtTime(0.15, audioContext.currentTime);
-      clickGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.02);
+      clickGain.gain.setValueAtTime(0.3, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.012);
       
       click.connect(clickFilter);
       clickFilter.connect(clickGain);
       clickGain.connect(audioContext.destination);
       
-      click.start(audioContext.currentTime);
-      click.stop(audioContext.currentTime + 0.02);
+      click.start(now);
+      click.stop(now + 0.012);
       
-      // Layer 3: Noise burst for texture (plastic rattle)
-      const bufferSize = audioContext.sampleRate * 0.04;
-      const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
+      // Layer 2: Low mechanical thunk (the button bottoming out)
+      const thunk = audioContext.createOscillator();
+      const thunkGain = audioContext.createGain();
+      const thunkFilter = audioContext.createBiquadFilter();
       
-      const noise = audioContext.createBufferSource();
-      noise.buffer = noiseBuffer;
+      thunk.type = 'sine';
+      thunk.frequency.setValueAtTime(200, now + 0.005);
+      thunk.frequency.exponentialRampToValueAtTime(100, now + 0.025);
       
-      const noiseFilter = audioContext.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(3000, audioContext.currentTime);
-      noiseFilter.Q.setValueAtTime(2, audioContext.currentTime);
+      thunkFilter.type = 'lowpass';
+      thunkFilter.frequency.setValueAtTime(300, now);
       
-      const noiseGain = audioContext.createGain();
-      noiseGain.gain.setValueAtTime(0.08, audioContext.currentTime);
-      noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.03);
+      thunkGain.gain.setValueAtTime(0, now);
+      thunkGain.gain.setValueAtTime(0.25, now + 0.005);
+      thunkGain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
       
-      noise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
-      noiseGain.connect(audioContext.destination);
+      thunk.connect(thunkFilter);
+      thunkFilter.connect(thunkGain);
+      thunkGain.connect(audioContext.destination);
       
-      noise.start(audioContext.currentTime);
+      thunk.start(now);
+      thunk.stop(now + 0.03);
+      
+      // Layer 3: Subtle spring release (the mechanism settling)
+      const spring = audioContext.createOscillator();
+      const springGain = audioContext.createGain();
+      const springFilter = audioContext.createBiquadFilter();
+      
+      spring.type = 'sine';
+      spring.frequency.setValueAtTime(800, now + 0.01);
+      spring.frequency.exponentialRampToValueAtTime(400, now + 0.02);
+      
+      springFilter.type = 'bandpass';
+      springFilter.frequency.setValueAtTime(600, now);
+      springFilter.Q.setValueAtTime(3, now);
+      
+      springGain.gain.setValueAtTime(0, now);
+      springGain.gain.setValueAtTime(0.1, now + 0.01);
+      springGain.gain.exponentialRampToValueAtTime(0.01, now + 0.025);
+      
+      spring.connect(springFilter);
+      springFilter.connect(springGain);
+      springGain.connect(audioContext.destination);
+      
+      spring.start(now);
+      spring.stop(now + 0.025);
+      
     } catch (e) {
       console.warn('Failed to play click sound:', e);
     }
