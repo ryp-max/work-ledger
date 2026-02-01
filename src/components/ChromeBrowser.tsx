@@ -161,9 +161,9 @@ export function ChromeBrowser() {
   return (
     <div className="w-full h-screen bg-gray-200 flex items-center justify-center p-8">
       {/* Browser Window with Drop Shadow */}
-      <div className="w-full max-w-7xl h-full max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="w-full max-w-7xl h-full max-h-[90vh] bg-white rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
         {/* Window Chrome */}
-        <div className="h-8 bg-gray-100 flex items-center justify-between px-3 border-b border-gray-200 rounded-t-2xl">
+        <div className="h-8 bg-gray-100 flex items-center justify-between px-3 border-b border-gray-200 rounded-t-[24px]">
           {/* Traffic Lights (macOS style) */}
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
@@ -257,7 +257,7 @@ export function ChromeBrowser() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white overflow-auto rounded-b-2xl">
+        <div className="flex-1 bg-white overflow-auto rounded-b-[24px]">
           {renderContent()}
         </div>
       </div>
