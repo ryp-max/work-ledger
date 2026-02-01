@@ -11,11 +11,14 @@ export function PhotoWorkbench() {
   const [editingRightPage, setEditingRightPage] = useState(false);
   const [showPlayStatus, setShowPlayStatus] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const clickSoundRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Load state on mount
+  // Load state on mount - ensure lamp is ON by default
   useEffect(() => {
-    setState(loadState());
+    const loaded = loadState();
+    // Force lamp ON on first load to avoid persisted "off" state
+    setState({ ...loaded, lampOn: true });
   }, []);
 
   // Save state on change
@@ -38,11 +41,14 @@ export function PhotoWorkbench() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editingSticky, editingLeftPage, editingRightPage]);
 
-  // Audio setup - play overdrive.mp3
+  // Audio setup - play overdrive.mp3 and click sound
   useEffect(() => {
     audioRef.current = new Audio('/audio/overdrive.mp3');
     audioRef.current.loop = true;
     audioRef.current.volume = 0.5;
+    
+    // Create click sound using Web Audio API (mechanical click)
+    clickSoundRef.current = null; // Will use Web Audio instead
     
     return () => {
       if (audioRef.current) {
@@ -50,6 +56,32 @@ export function PhotoWorkbench() {
         audioRef.current = null;
       }
     };
+  }, []);
+
+  // Play a mechanical click sound
+  const playClickSound = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      
+      // Create a short click sound
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Quick attack, quick decay for a "click"
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.05);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.08);
+    } catch {
+      // Audio not supported, ignore
+    }
   }, []);
 
   // Handle play state changes
@@ -67,10 +99,11 @@ export function PhotoWorkbench() {
   }, [state?.isPlaying]);
 
   const togglePlay = useCallback(() => {
+    playClickSound();
     setState(prev => prev ? { ...prev, isPlaying: !prev.isPlaying } : null);
     setShowPlayStatus(true);
     setTimeout(() => setShowPlayStatus(false), 2000);
-  }, []);
+  }, [playClickSound]);
 
   const toggleLamp = useCallback(() => {
     setState(prev => prev ? { ...prev, lampOn: !prev.lampOn } : null);
