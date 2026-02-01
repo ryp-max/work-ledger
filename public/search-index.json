@@ -2,28 +2,37 @@
   {
     "title": "Week 04",
     "slug": "/weeks/2026/04",
-    "dateRange": "Jan 22–28, 2026",
-    "tags": ["node-graph", "programmatic-ui"],
+    "dateRange": "Jan 21–27, 2026",
+    "tags": [
+      "node-graph",
+      "programmatic-ui"
+    ],
     "shipped": "- Command palette with ⌘K shortcut\n- Search index generation for fast client-side search\n- Guestbook API with rate limiting and spam protection\n- Smooth page transitions between weeks",
     "inProgress": "- Exploring node graph interfaces for visual programming\n- Researching programmatic UI patterns\n- Planning the music/audio integration",
-    "grain": "Week four brings a shift in focus. The foundational work is largely complete—now it's time to explore what this ledger can become."
+    "grain": "Week four brings a shift in focus. The foundational work is largely complete—now it's time to explore what this ledger can become.\n\nThe node graph research is fascinating. There's something deeply sat"
   },
   {
     "title": "Week 02",
     "slug": "/weeks/2026/02",
-    "dateRange": "Jan 8–14, 2026",
-    "tags": ["design-system", "components"],
-    "shipped": "- Finalized the color palette: paper, ink, stamp, tape\n- Built the LinkTape component with kind-based styling\n- Implemented the ArtifactGrid with lightbox functionality\n- Added the BenchRadio music player component",
+    "dateRange": "Jan 7–13, 2026",
+    "tags": [
+      "design-system",
+      "components"
+    ],
+    "shipped": "- Finalized the color palette: paper, ink, stamp, tape\n- Built the LinkTape component with kind-based styling\n- Implemented the ArtifactGrid with lightbox functionality\n- Added the BenchRadio music pl",
     "inProgress": "- Testing responsive layouts on various screen sizes\n- Improving accessibility for keyboard navigation\n- Writing documentation for content authors",
-    "grain": "This week was about establishing the visual vocabulary. Every design system needs a few core elements that can be combined in different ways."
+    "grain": "This week was about establishing the visual vocabulary. Every design system needs a few core elements that can be combined in different ways. For the ledger, these are:\n\n1. **Paper** — the warm off-wh"
   },
   {
     "title": "Week 01",
     "slug": "/weeks/2026/01",
-    "dateRange": "Jan 1–7, 2026",
-    "tags": ["setup", "infrastructure"],
+    "dateRange": "Dec 31 – Jan 6, 2026",
+    "tags": [
+      "setup",
+      "infrastructure"
+    ],
     "shipped": "- Set up the Work Ledger project structure\n- Configured Next.js 14 with App Router and TypeScript\n- Implemented the two-column ledger layout\n- Created the sidebar navigation with year/week selection",
     "inProgress": "- Refining the paper texture and visual design\n- Building out the command palette search functionality\n- Setting up the guestbook feature",
-    "grain": "The first week of the year always feels like opening a fresh notebook. There's something meditative about setting up a new project—choosing the right tools, establishing patterns."
+    "grain": "The first week of the year always feels like opening a fresh notebook. There's something meditative about setting up a new project—choosing the right tools, establishing patterns, creating space for f"
   }
 ]

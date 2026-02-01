@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import type { Artifact } from '@/lib/schemas';
 
 interface ArtifactGridProps {
@@ -31,12 +30,11 @@ export function ArtifactGrid({ artifacts }: ArtifactGridProps) {
                        border border-[var(--tape-border)] transition-all duration-200
                        hover:shadow-md hover:border-[var(--ink-muted)] cursor-pointer"
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={artifact.src}
               alt={artifact.alt}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 50vw, 33vw"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </button>
         ))}
@@ -73,13 +71,12 @@ export function ArtifactGrid({ artifacts }: ArtifactGridProps) {
             </button>
           )}
           
-          <div className="relative max-w-4xl max-h-[80vh] w-full h-full">
-            <Image
+          <div className="relative max-w-4xl max-h-[80vh] w-full h-full flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={displayArtifacts[lightboxIndex].src}
               alt={displayArtifacts[lightboxIndex].alt}
-              fill
-              className="object-contain"
-              sizes="90vw"
+              className="max-w-full max-h-full object-contain"
             />
           </div>
           

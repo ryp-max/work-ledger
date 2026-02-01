@@ -5,6 +5,5 @@ export { LedgerPage } from './LedgerPage';
 export { SectionBlock } from './SectionBlock';
 export { LinkTape } from './LinkTape';
 export { ArtifactGrid } from './ArtifactGrid';
-export { MDXContent } from './MDXContent';
 export { BenchRadio } from './BenchRadio';
 export { CommandPalette } from './CommandPalette';

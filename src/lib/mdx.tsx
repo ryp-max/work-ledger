@@ -1,10 +1,5 @@
-'use client';
-
-import { MDXRemote, type MDXRemoteSerializeResult } from 'next-mdx-remote';
-
-interface MDXContentProps {
-  source: MDXRemoteSerializeResult;
-}
+import { compileMDX } from 'next-mdx-remote/rsc';
+import type { ReactElement } from 'react';
 
 const components = {
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -33,10 +28,10 @@ const components = {
   ),
 };
 
-export function MDXContent({ source }: MDXContentProps) {
-  return (
-    <div className="prose">
-      <MDXRemote {...source} components={components} />
-    </div>
-  );
+export async function renderMDX(content: string): Promise<ReactElement> {
+  const { content: renderedContent } = await compileMDX({
+    source: content,
+    components,
+  });
+  return renderedContent;
 }

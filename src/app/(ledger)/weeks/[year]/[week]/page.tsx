@@ -1,12 +1,11 @@
 import { notFound } from 'next/navigation';
 import { getWeek, getAllWeeks } from '@/lib/content';
-import { serializeMDX } from '@/lib/mdx';
+import { renderMDX } from '@/lib/mdx';
 import { LedgerPage } from '@/components/LedgerPage';
 import { LedgerHeader } from '@/components/LedgerHeader';
 import { SectionBlock } from '@/components/SectionBlock';
 import { LinkTape } from '@/components/LinkTape';
 import { ArtifactGrid } from '@/components/ArtifactGrid';
-import { MDXContent } from '@/components/MDXContent';
 import { BenchRadio } from '@/components/BenchRadio';
 
 interface PageProps {
@@ -39,7 +38,7 @@ export default async function WeekPage({ params }: PageProps) {
     notFound();
   }
   
-  const mdxSource = await serializeMDX(weekData.content);
+  const mdxContent = await renderMDX(weekData.content);
   const { frontmatter } = weekData;
   
   return (
@@ -53,7 +52,9 @@ export default async function WeekPage({ params }: PageProps) {
         />
         
         {/* MDX Content (Shipped, In Progress, Grain, Notes) */}
-        <MDXContent source={mdxSource} />
+        <div className="prose">
+          {mdxContent}
+        </div>
         
         {/* Links */}
         {frontmatter.links.length > 0 && (
