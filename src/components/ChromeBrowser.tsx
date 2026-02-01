@@ -167,7 +167,17 @@ export function ChromeBrowser() {
             onBookmarkClick={handleBookmarkClick}
             onOmniboxSubmit={(value) => {
               setOmniboxValue(value);
-              handleOmniboxSubmit({ preventDefault: () => {} } as React.FormEvent);
+              const input = value.trim().toLowerCase();
+              if (input.includes('chat') || input.includes('gpt') || input === '') {
+                addTab('chatgpt', 'chrome://chatgpt', 'ChatGPT');
+              } else if (input.startsWith('http://') || input.startsWith('https://') || 
+                  (input.includes('.') && !input.includes(' '))) {
+                const url = input.startsWith('http') ? input : `https://${input}`;
+                addTab('url', url, new URL(url).hostname);
+              } else {
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(value)}`;
+                addTab('url', searchUrl, 'Google Search');
+              }
             }}
             omniboxRef={omniboxRef}
           />
