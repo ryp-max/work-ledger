@@ -161,7 +161,7 @@ export function ChromeBrowser() {
   return (
     <div className="w-full h-screen bg-gray-200 flex items-center justify-center p-8">
       {/* Browser Window with Drop Shadow */}
-      <div className="w-full max-w-7xl h-full max-h-[90vh] bg-white rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
+      <div className="w-full max-w-[92rem] h-full max-h-[90vh] bg-white rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
         {/* Window Chrome */}
         <div className="h-8 bg-gray-100 flex items-center justify-between px-3 border-b border-gray-200 rounded-t-[24px]">
           {/* Traffic Lights (macOS style) */}
