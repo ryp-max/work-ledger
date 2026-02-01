@@ -140,8 +140,12 @@ body {
 }
 
 /* Custom Circular Cursor */
-* {
+html, body, button, a {
   cursor: none !important;
+}
+
+input, textarea, iframe {
+  cursor: auto;
 }
 
 .custom-cursor {
