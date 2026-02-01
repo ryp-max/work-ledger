@@ -16,18 +16,18 @@ const DESIGN_BOOKMARKS = [
 
 export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center min-h-[600px] bg-gray-100">
+    <div className="w-full h-full flex flex-col items-center justify-center min-h-[600px] bg-gray-100 dark:bg-gray-900">
       {/* Search Bar - Centered */}
       <div className="w-full max-w-2xl mb-16">
-        <div className="flex items-center gap-3 bg-white rounded-lg border border-gray-300 shadow-sm px-4 py-3">
+        <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-3">
           {/* Magnifying glass icon - dark gray */}
-          <svg className="w-5 h-5 text-gray-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-gray-700 dark:text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             placeholder="Ask me anything"
-            className="flex-1 outline-none text-gray-700 placeholder-gray-500 text-base"
+            className="flex-1 outline-none text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 text-base bg-transparent"
             autoFocus
           />
           {/* Microphone icon - multi-colored */}
@@ -55,7 +55,7 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
           >
             {/* News Icon */}
             {bookmark.icon === 'news' && (
-              <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
                 <div className="relative w-12 h-12">
                   <div className="absolute inset-0 bg-blue-500 rounded"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -70,7 +70,7 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
             
             {/* Youtube Icon */}
             {bookmark.icon === 'youtube' && (
-              <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
                 <div className="w-12 h-12 bg-red-600 rounded flex items-center justify-center">
                   <div className="w-0 h-0 border-l-[8px] border-l-white border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-1"></div>
                 </div>
@@ -79,7 +79,7 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
             
             {/* Maps Icon */}
             {bookmark.icon === 'maps' && (
-              <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
                 <div className="relative w-12 h-12">
                   <div className="absolute inset-0">
                     <div className="absolute top-0 left-0 w-6 h-6 bg-red-500 rounded-tl-lg"></div>
@@ -96,7 +96,7 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
             
             {/* Gmail Icon */}
             {bookmark.icon === 'gmail' && (
-              <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
                 <div className="relative w-12 h-12">
                   <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -108,7 +108,7 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
             
             {/* Drive Icon */}
             {bookmark.icon === 'drive' && (
-              <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:shadow-md transition-shadow">
                 <div className="relative w-12 h-12">
                   <div className="absolute top-0 left-0 w-6 h-6 bg-green-500 rounded-tl-lg"></div>
                   <div className="absolute top-0 right-0 w-6 h-6 bg-yellow-500 rounded-tr-lg"></div>
@@ -118,7 +118,7 @@ export function NewTabPage({ onBookmarkClick }: NewTabPageProps) {
               </div>
             )}
             
-            <span className="text-sm text-gray-700 group-hover:text-gray-900 font-normal">{bookmark.title}</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 font-normal">{bookmark.title}</span>
           </button>
         ))}
       </div>

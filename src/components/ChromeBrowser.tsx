@@ -37,7 +37,24 @@ export function ChromeBrowser() {
   const [tabs, setTabs] = useState<Tab[]>(DEFAULT_TABS);
   const [activeTabId, setActiveTabId] = useState<string>('1');
   const [omniboxValue, setOmniboxValue] = useState<string>('');
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode');
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
   const omniboxRef = useRef<HTMLInputElement>(null);
+
+  // Save dark mode preference
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
   // Keyboard shortcut: Cmd/Ctrl+L focuses omnibox
   useEffect(() => {
@@ -174,30 +191,30 @@ export function ChromeBrowser() {
         </div>
 
         {/* Tabs Bar */}
-        <div className="bg-gray-100 flex items-end overflow-x-auto border-b border-gray-200">
+        <div className="bg-gray-100 dark:bg-gray-700 flex items-end overflow-x-auto border-b border-gray-200 dark:border-gray-600">
           {tabs.map((tab) => (
             <div
               key={tab.id}
               onClick={() => switchTab(tab.id)}
               className={`
                 flex items-center gap-2 px-4 py-2 min-w-[180px] max-w-[240px] cursor-pointer
-                border-t border-l border-r border-gray-300 rounded-t-lg transition-colors
+                border-t border-l border-r border-gray-300 dark:border-gray-600 rounded-t-lg transition-colors
                 ${activeTabId === tab.id 
-                  ? 'bg-white border-b-white -mb-px' 
-                  : 'bg-gray-200 hover:bg-gray-250 border-b border-gray-300'
+                  ? 'bg-white dark:bg-gray-800 border-b-white dark:border-b-gray-800 -mb-px' 
+                  : 'bg-gray-200 dark:bg-gray-600 hover:bg-gray-250 dark:hover:bg-gray-550 border-b border-gray-300 dark:border-gray-600'
                 }
               `}
             >
               {tab.favicon && (
                 <span className="text-xs">{tab.favicon}</span>
               )}
-              <span className={`flex-1 text-sm truncate ${activeTabId === tab.id ? 'text-gray-900' : 'text-gray-600'}`}>
+              <span className={`flex-1 text-sm truncate ${activeTabId === tab.id ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'}`}>
                 {tab.title}
               </span>
               {tabs.length > 1 && (
                 <button
                   onClick={(e) => closeTab(tab.id, e)}
-                  className="w-4 h-4 rounded hover:bg-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                  className="w-4 h-4 rounded hover:bg-gray-300 dark:hover:bg-gray-500 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                 >
                   ×
                 </button>
@@ -207,7 +224,7 @@ export function ChromeBrowser() {
           {/* New Tab Button */}
           <button
             onClick={() => addTab('newtab')}
-            className="w-8 h-8 mx-1 rounded hover:bg-gray-300 flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+            className="w-8 h-8 mx-1 rounded hover:bg-gray-300 dark:hover:bg-gray-500 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
             title="New Tab"
           >
             +
@@ -215,49 +232,49 @@ export function ChromeBrowser() {
         </div>
 
         {/* Omnibox */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2">
-          <button className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors" title="Back">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 px-4 py-2 flex items-center gap-2">
+          <button className="w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title="Back">
             ←
           </button>
-          <button className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors" title="Forward">
+          <button className="w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title="Forward">
             →
           </button>
-          <button className="w-8 h-8 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors" title="Reload">
+          <button className="w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" title="Reload">
             ↻
           </button>
           <form onSubmit={handleOmniboxSubmit} className="flex-1 flex items-center">
-            <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2 border border-gray-200 hover:border-gray-300 focus-within:border-blue-500 focus-within:bg-white transition-colors">
-              <span className="text-gray-400 text-sm">🔒</span>
+            <div className="flex-1 flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-2 border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:bg-white dark:focus-within:bg-gray-600 transition-colors">
+              <span className="text-gray-400 dark:text-gray-500 text-sm">🔒</span>
               <input
                 ref={omniboxRef}
                 type="text"
                 value={omniboxValue}
                 onChange={(e) => setOmniboxValue(e.target.value)}
                 placeholder="Search Google or type a URL"
-                className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder-gray-400"
+                className="flex-1 bg-transparent text-sm text-gray-900 dark:text-gray-100 outline-none placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </form>
         </div>
 
         {/* Bookmarks Bar */}
-        <div className="bg-white border-b border-gray-200 px-4 py-1.5 flex items-center gap-1">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 px-4 py-1.5 flex items-center gap-1">
           {BOOKMARKS.map((bookmark) => (
             <button
               key={bookmark.id}
               onClick={() => handleBookmarkClick(bookmark)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors group"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
               <div className={`w-5 h-5 rounded ${bookmark.color} flex items-center justify-center text-white text-xs`}>
                 {bookmark.icon}
               </div>
-              <span className="text-xs text-gray-700 group-hover:text-gray-900">{bookmark.title}</span>
+              <span className="text-xs text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100">{bookmark.title}</span>
             </button>
           ))}
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white overflow-auto rounded-b-[24px]">
+        <div className="flex-1 bg-white dark:bg-gray-800 overflow-auto rounded-b-[24px]">
           {renderContent()}
         </div>
       </div>
