@@ -169,7 +169,7 @@ export function ChromeBrowser() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#F3F4F6] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+    <div className="w-full h-screen bg-[#EEF0F3] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
       {/* Dark Mode Toggle - Top Right */}
       <button
         onClick={() => setDarkMode(!darkMode)}
@@ -189,16 +189,17 @@ export function ChromeBrowser() {
 
       {/* Browser Window */}
       <div 
-        className="bg-white dark:bg-gray-800 rounded-[20px] shadow-2xl flex flex-col overflow-hidden transition-all duration-300"
+        className="bg-[#FAFAFB] dark:bg-gray-800 rounded-[20px] flex flex-col overflow-hidden transition-all duration-300"
         style={{
           width: 'min(1280px, 92vw)',
           height: 'min(760px, 86vh)',
+          boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.12), 0 8px 24px -8px rgba(0, 0, 0, 0.08)',
         }}
       >
-        {/* Window Chrome - Traffic Lights + Tab Strip */}
-        <div className="h-[44px] bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-3">
+        {/* Window Chrome - Header Area */}
+        <div className="h-[52px] bg-gray-100 dark:bg-gray-800 border-b border-gray-200/60 dark:border-gray-700 flex items-center px-4">
           {/* Traffic Lights */}
-          <div className="flex gap-1.5 mr-3">
+          <div className="flex gap-1.5 mr-4">
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
@@ -211,10 +212,10 @@ export function ChromeBrowser() {
                 key={tab.id}
                 onClick={() => switchTab(tab.id)}
                 className={`
-                  group relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap
+                  group relative px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap
                   ${activeTabId === tab.id 
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' 
-                    : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-[12px]' 
+                    : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full'
                   }
                 `}
               >
