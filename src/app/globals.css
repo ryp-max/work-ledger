@@ -28,25 +28,20 @@ body {
   line-height: 1.4;
 }
 
-/* Dim overlay for lamp off state - MUCH darker */
+/* Dim overlay for lamp off state */
 .dim-overlay {
-  background: 
-    /* Base dark layer */
-    rgba(0, 0, 0, 0.75),
-    /* Radial gradient from lamp position */
-    radial-gradient(
-      ellipse at 85% 20%,
-      rgba(0, 0, 0, 0.3) 0%,
-      rgba(0, 0, 0, 0.7) 30%,
-      rgba(0, 0, 0, 0.85) 60%,
-      rgba(0, 0, 0, 0.92) 100%
-    );
+  background: radial-gradient(
+    ellipse at 75% 35%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
   transition: opacity 0.5s ease;
 }
 
-/* Vignette effect - stronger */
+/* Vignette effect */
 .vignette {
-  box-shadow: inset 0 0 200px 100px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 150px 60px rgba(0, 0, 0, 0.5);
 }
 
 /* Debug hitbox styling */

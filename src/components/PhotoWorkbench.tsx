@@ -142,7 +142,7 @@ export function PhotoWorkbench() {
           data-label="Play/Pause"
           style={{
             left: '14%',
-            top: '55%',
+            top: '63%',
             width: '9%',
             height: '7%',
           }}
@@ -162,7 +162,7 @@ export function PhotoWorkbench() {
           data-label="Walkman"
           style={{
             left: '6%',
-            top: '44%',
+            top: '52%',
             width: '20%',
             height: '24%',
           }}
@@ -184,7 +184,7 @@ export function PhotoWorkbench() {
           data-label="Lamp Switch"
           style={{
             left: '84%',
-            top: '18%',
+            top: '26%',
             width: '6%',
             height: '4%',
           }}
@@ -204,7 +204,7 @@ export function PhotoWorkbench() {
           data-label="Lamp Head"
           style={{
             left: '77%',
-            top: '0%',
+            top: '8%',
             width: '23%',
             height: '32%',
           }}
@@ -216,7 +216,7 @@ export function PhotoWorkbench() {
           data-label="Sticky Note"
           style={{
             left: '62%',
-            top: '6%',
+            top: '14%',
             width: '12%',
             height: '12%',
           }}
@@ -252,7 +252,7 @@ export function PhotoWorkbench() {
           data-label="Left Page"
           style={{
             left: '31%',
-            top: '26%',
+            top: '34%',
             width: '25%',
             height: '46%',
           }}
@@ -289,7 +289,7 @@ export function PhotoWorkbench() {
           data-label="Right Page"
           style={{
             left: '56%',
-            top: '26%',
+            top: '34%',
             width: '25%',
             height: '46%',
           }}
@@ -326,7 +326,7 @@ export function PhotoWorkbench() {
           data-label="Month Tabs (Top)"
           style={{
             left: '68%',
-            top: '24%',
+            top: '32%',
             width: '20%',
             height: '5%',
           }}
@@ -357,7 +357,7 @@ export function PhotoWorkbench() {
           data-label="Month Tabs (Side)"
           style={{
             left: '79%',
-            top: '25%',
+            top: '33%',
             width: '4%',
             height: '28%',
           }}
