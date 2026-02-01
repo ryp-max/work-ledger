@@ -40,6 +40,18 @@ export function ChromeBrowser() {
     return false;
   });
   const omniboxRef = useRef<HTMLInputElement>(null);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
+
+  // Track mouse position for custom cursor
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPos({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Apply dark mode class on mount and when it changes
   useEffect(() => {
@@ -144,6 +156,7 @@ export function ChromeBrowser() {
             onBookmarkClick={handleBookmarkClick}
             onOmniboxSubmit={handleOmniboxSubmit}
             omniboxRef={omniboxRef}
+            onInteractiveHover={setIsHoveringInteractive}
           />
         );
       case 'weekly-log':
@@ -170,9 +183,20 @@ export function ChromeBrowser() {
 
   return (
     <div className="w-full h-screen bg-[#EEF0F3] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+      {/* Custom Cursor */}
+      <div
+        className={`custom-cursor ${isHoveringInteractive ? 'hover' : ''}`}
+        style={{
+          left: `${cursorPos.x}px`,
+          top: `${cursorPos.y}px`,
+        }}
+      />
+
       {/* Dark Mode Toggle - Top Right */}
       <button
         onClick={() => setDarkMode(!darkMode)}
+        onMouseEnter={() => setIsHoveringInteractive(true)}
+        onMouseLeave={() => setIsHoveringInteractive(false)}
         className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center hover:shadow-md transition-all duration-200"
         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       >
@@ -211,6 +235,8 @@ export function ChromeBrowser() {
               <button
                 key={tab.id}
                 onClick={() => switchTab(tab.id)}
+                onMouseEnter={() => setIsHoveringInteractive(true)}
+                onMouseLeave={() => setIsHoveringInteractive(false)}
                 className={`
                   group relative px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap
                   ${activeTabId === tab.id 
@@ -232,6 +258,8 @@ export function ChromeBrowser() {
             ))}
             <button
               onClick={() => addTab('newtab')}
+              onMouseEnter={() => setIsHoveringInteractive(true)}
+              onMouseLeave={() => setIsHoveringInteractive(false)}
               className="ml-1 w-7 h-7 rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200"
               title="New Tab"
             >

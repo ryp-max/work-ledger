@@ -7,6 +7,7 @@ interface NewTabPageProps {
   onBookmarkClick: (bookmark: typeof BOOKMARKS[0]) => void;
   onOmniboxSubmit?: (value: string) => void;
   omniboxRef?: React.RefObject<HTMLInputElement | null>;
+  onInteractiveHover?: (isHovering: boolean) => void;
 }
 
 const MICRO_NOTES = [
@@ -63,7 +64,7 @@ const SHORTCUTS = [
   },
 ];
 
-export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: externalRef }: NewTabPageProps) {
+export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: externalRef, onInteractiveHover }: NewTabPageProps) {
   const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
   const [showNote, setShowNote] = useState(true);
   const [searchValue, setSearchValue] = useState('');
@@ -102,7 +103,11 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
       {/* Centered Omnibox */}
       <div className="w-full mb-3" style={{ maxWidth: '640px' }}>
         <form onSubmit={handleSearchSubmit} className="relative">
-          <div className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-1 focus-within:ring-gray-300 dark:focus-within:ring-gray-500 transition-all duration-200 px-5 py-3">
+          <div 
+            onMouseEnter={() => onInteractiveHover?.(true)}
+            onMouseLeave={() => onInteractiveHover?.(false)}
+            className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-1 focus-within:ring-gray-300 dark:focus-within:ring-gray-500 transition-all duration-200 px-5 py-3"
+          >
             <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -132,6 +137,8 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
           <button
             key={shortcut.id}
             onClick={() => handleShortcutClick(shortcut)}
+            onMouseEnter={() => onInteractiveHover?.(true)}
+            onMouseLeave={() => onInteractiveHover?.(false)}
             className="group flex flex-col items-center gap-2"
           >
             <div className="w-11 h-11 rounded-[14px] bg-white dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 group-hover:shadow-md transition-all duration-200">
