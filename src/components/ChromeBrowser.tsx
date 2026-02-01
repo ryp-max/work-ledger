@@ -18,7 +18,7 @@ export interface Tab {
 }
 
 const DEFAULT_TABS: Tab[] = [
-  { id: '1', title: 'New Tab', pageType: 'newtab', url: 'chrome://newtab' },
+  { id: '1', title: 'Home', pageType: 'newtab', url: 'chrome://newtab' },
 ];
 
 export const BOOKMARKS = [
@@ -89,22 +89,17 @@ export function ChromeBrowser() {
 
   const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Prevent closing the last tab
     if (tabs.length <= 1) return;
     
     setTabs(prev => {
       const filtered = prev.filter(t => t.id !== tabId);
+      // If we closed the active tab, switch to the last remaining tab
+      if (tabId === activeTabId && filtered.length > 0) {
+        setActiveTabId(filtered[filtered.length - 1].id);
+      }
       return filtered;
     });
-    
-    if (tabId === activeTabId) {
-      setTabs(prev => {
-        const filtered = prev.filter(t => t.id !== tabId);
-        if (filtered.length > 0) {
-          setActiveTabId(filtered[filtered.length - 1].id);
-        }
-        return filtered;
-      });
-    }
   }, [activeTabId, tabs.length]);
 
   const switchTab = useCallback((tabId: string) => {
