@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "id": "entry-seed-001",
+      "name": "A Visitor",
+      "message": "Beautiful work on this ledger. The attention to detail in the typography and spacing really shows. Looking forward to seeing how it evolves.",
+      "url": "",
+      "timestamp": "2026-01-15T10:30:00.000Z"
+    },
+    {
+      "id": "entry-seed-002",
+      "name": "Fellow Craftsperson",
+      "message": "The Japanese woodworking aesthetic is spot on. Reminds me of Nakashima's furniture—functional beauty without unnecessary ornamentation.",
+      "url": "https://example.com",
+      "timestamp": "2026-01-10T14:22:00.000Z"
+    }
+  ]
+}
