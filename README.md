@@ -165,13 +165,25 @@ work-ledger/
 | `--stamp` | `#b85450` | Accent color |
 | `--tape` | `#e8e4dc` | Chip backgrounds |
 
-## Deploying to Vercel
+## Deployment
+
+### Deploying to Vercel
 
 1. Push your code to GitHub
 2. Import the repository in [Vercel](https://vercel.com)
 3. Deploy!
 
 The build command automatically generates the search index.
+
+### Manual Deployment
+
+```bash
+# Build the project
+npm run build
+
+# Start production server
+npm start
+```
 
 ## Tech Stack
 
