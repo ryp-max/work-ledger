@@ -79,7 +79,7 @@ export function WeeklyLogPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-16"
+          className="mb-16 text-center"
         >
           <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 mb-3 tracking-tight">
             Weekly Log
@@ -104,7 +104,7 @@ export function WeeklyLogPage() {
               className="group"
             >
               {/* Title with Week # and Date */}
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50 mb-4 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50 mb-4 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors text-center">
                 <span className="text-gray-600 dark:text-gray-400 font-normal">
                   Week {getWeekNumber(post.title) || '?'}
                 </span>
@@ -116,13 +116,13 @@ export function WeeklyLogPage() {
               
               {/* Subtitle */}
               {post.title.includes(':') && (
-                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 font-medium">
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 font-medium text-center">
                   {post.title.split(':').slice(1).join(':').trim()}
                 </p>
               )}
 
               {/* Excerpt */}
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8 text-lg">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8 text-lg text-center">
                 {post.excerpt}
               </p>
 
