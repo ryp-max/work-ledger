@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type GameType = '2048' | 'wordle';
 
@@ -11,32 +12,60 @@ export function GamesPage() {
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Game Selector */}
       <div className="flex gap-2 p-4 border-b border-gray-200 dark:border-gray-700">
-        <button
+        <motion.button
           onClick={() => setActiveGame('2048')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
             activeGame === '2048'
               ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           2048
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => setActiveGame('wordle')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
             activeGame === 'wordle'
               ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           Wordle
-        </button>
+        </motion.button>
       </div>
 
       {/* Game Content */}
       <div className="flex-1 overflow-auto">
-        {activeGame === '2048' && <Game2048 />}
-        {activeGame === 'wordle' && <Wordle />}
+        <AnimatePresence mode="wait">
+          {activeGame === '2048' && (
+            <motion.div
+              key="2048"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <Game2048 />
+            </motion.div>
+          )}
+          {activeGame === 'wordle' && (
+            <motion.div
+              key="wordle"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <Wordle />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -166,53 +195,103 @@ function Game2048() {
     <div className="w-full h-full flex items-center justify-center p-8">
       <div className="max-w-md w-full">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">2048</h2>
-          <div className="text-right">
+          <motion.h2 
+            className="text-3xl font-bold text-gray-900 dark:text-white"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          >
+            2048
+          </motion.h2>
+          <motion.div 
+            className="text-right"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          >
             <div className="text-sm text-gray-600 dark:text-gray-400">Score</div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{score}</div>
-          </div>
+            <motion.div 
+              className="text-2xl font-bold text-gray-900 dark:text-white"
+              key={score}
+              initial={{ scale: 1.2, y: -10 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 20 }}
+            >
+              {score}
+            </motion.div>
+          </motion.div>
         </div>
         
-        {(won || gameOver) && (
-          <div className={`mb-4 p-4 rounded-lg text-center ${won ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}>
-            <div className={`text-lg font-bold ${won ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
-              {won ? 'You Win!' : 'Game Over!'}
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {(won || gameOver) && (
+            <motion.div 
+              className={`mb-4 p-4 rounded-lg text-center ${won ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}
+              initial={{ opacity: 0, scale: 0.8, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <motion.div 
+                className={`text-lg font-bold ${won ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.1 }}
+              >
+                {won ? 'You Win!' : 'Game Over!'}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="bg-gray-300 dark:bg-gray-700 rounded-lg p-2 grid grid-cols-4 gap-2">
           {grid.map((row, i) =>
             row.map((cell, j) => (
-              <div
-                key={`${i}-${j}`}
-                className={`aspect-square rounded flex items-center justify-center text-2xl font-bold transition-all duration-200 ${
+              <motion.div
+                key={`${i}-${j}-${cell}`}
+                className={`aspect-square rounded flex items-center justify-center text-2xl font-bold ${
                   cell === 0
                     ? 'bg-gray-200 dark:bg-gray-600'
                     : getTileColor(cell)
                 }`}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 500, 
+                  damping: 25,
+                  delay: (i * 4 + j) * 0.02
+                }}
+                whileHover={cell !== 0 ? { scale: 1.05 } : {}}
               >
                 {cell !== 0 && cell}
-              </div>
+              </motion.div>
             ))
           )}
         </div>
 
-        <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        <motion.div 
+          className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           Use arrow keys to play
-        </div>
+        </motion.div>
 
-        <button
+        <motion.button
           onClick={() => {
             setGrid(initializeGrid());
             setScore(0);
             setGameOver(false);
             setWon(false);
           }}
-          className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           New Game
-        </button>
+        </motion.button>
       </div>
     </div>
   );
@@ -274,40 +353,73 @@ function Wordle() {
       <div className="max-w-md w-full">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">Wordle</h2>
 
-        {(won || gameOver) && (
-          <div className={`mb-4 p-4 rounded-lg text-center ${won ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}>
-            <div className={`text-lg font-bold ${won ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
-              {won ? 'You Win!' : `Game Over! The word was ${word}`}
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {(won || gameOver) && (
+            <motion.div 
+              className={`mb-4 p-4 rounded-lg text-center ${won ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}
+              initial={{ opacity: 0, scale: 0.8, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <motion.div 
+                className={`text-lg font-bold ${won ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.1 }}
+              >
+                {won ? 'You Win!' : `Game Over! The word was ${word}`}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="space-y-2 mb-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex gap-2 justify-center">
+            <motion.div 
+              key={i} 
+              className="flex gap-2 justify-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 25 }}
+            >
               {[...Array(5)].map((_, j) => {
                 const guess = guesses[i];
                 const letter = guess ? guess[j] : i === guesses.length ? currentGuess[j] : '';
                 const color = guess ? getLetterColor(letter, j, guess) : 'bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600';
                 
                 return (
-                  <div
+                  <motion.div
                     key={j}
-                    className={`w-12 h-12 rounded flex items-center justify-center text-xl font-bold ${color} transition-all duration-200`}
+                    className={`w-12 h-12 rounded flex items-center justify-center text-xl font-bold ${color}`}
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 500, 
+                      damping: 25,
+                      delay: letter ? (i * 5 + j) * 0.05 : 0
+                    }}
+                    whileHover={letter ? { scale: 1.1 } : {}}
                   >
                     {letter}
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <motion.div 
+          className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           Type to guess a 5-letter word
-        </div>
+        </motion.div>
 
-        <button
+        <motion.button
           onClick={() => {
             const randomWord = WORDS[Math.floor(Math.random() * WORDS.length)];
             setWord(randomWord);
@@ -316,10 +428,13 @@ function Wordle() {
             setGameOver(false);
             setWon(false);
           }}
-          className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           New Game
-        </button>
+        </motion.button>
       </div>
     </div>
   );

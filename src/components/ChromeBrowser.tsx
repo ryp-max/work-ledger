@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import { playKeyboardClick } from '@/lib/keyboard-sound';
 import { NewTabPage } from './pages/NewTabPage';
 import { WeeklyLogPage } from './pages/WeeklyLogPage';
 import { PhotosPage } from './pages/PhotosPage';
@@ -46,8 +48,9 @@ export function ChromeBrowser() {
   
   // Playlist
   const PLAYLIST = [
-    { id: 1, title: 'Overdrive', src: '/audio/overdrive.mp3' },
-    { id: 2, title: 'Beautiful Escape (feat. Zak Abel)', src: '/audio/Beautiful Escape (feat. Zak Abel) Tom Misch.mp3' },
+    { id: 1, title: 'Overdrive', artist: 'TWC', src: '/audio/overdrive.mp3' },
+    { id: 2, title: 'Beautiful Escape (feat. Zak Abel)', artist: 'Tom Misch', src: '/audio/Beautiful Escape (feat. Zak Abel) Tom Misch.mp3' },
+    { id: 3, title: 'Take Care', artist: 'GUMMY (거미), Dynamicduo (다이나믹 듀오)', src: '/audio/Take Care.mp3' },
   ];
 
   // Audio state - persists across tab switches
@@ -407,23 +410,62 @@ export function ChromeBrowser() {
     }
   };
 
+  // Physics-based cursor movement
+  const cursorX = useSpring(cursorPos.x, { stiffness: 500, damping: 30 });
+  const cursorY = useSpring(cursorPos.y, { stiffness: 500, damping: 30 });
+  const cursorScale = useSpring(isHoveringInteractive ? 2 : 1, { stiffness: 400, damping: 25 });
+
+  // Global click handler for keyboard sound
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Skip if clicking on input/textarea (typing)
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      // Only play sound for interactive elements (buttons, links, clickable divs)
+      const isInteractive = 
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'A' ||
+        target.closest('button') !== null ||
+        target.closest('a') !== null ||
+        target.closest('[role="button"]') !== null ||
+        target.style.cursor === 'pointer' ||
+        window.getComputedStyle(target).cursor === 'pointer';
+      
+      if (isInteractive) {
+        playKeyboardClick();
+      }
+    };
+
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, []);
+
   return (
     <div className="w-full h-screen bg-[#EEF0F3] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
-      {/* Custom Cursor */}
-      <div
-        className={`custom-cursor ${isHoveringInteractive ? 'hover' : ''}`}
+      {/* Custom Cursor with Physics */}
+      <motion.div
+        className="custom-cursor"
         style={{
-          left: `${cursorPos.x}px`,
-          top: `${cursorPos.y}px`,
+          left: cursorX,
+          top: cursorY,
+          scale: cursorScale,
         }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
       />
 
       {/* Dark Mode Toggle - Top Right */}
-      <button
+      <motion.button
         onClick={() => setDarkMode(!darkMode)}
         onMouseEnter={() => setIsHoveringInteractive(true)}
         onMouseLeave={() => setIsHoveringInteractive(false)}
-        className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center hover:shadow-md transition-all duration-200"
+        className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center"
+        whileHover={{ scale: 1.1, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {darkMode ? (
@@ -435,21 +477,23 @@ export function ChromeBrowser() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
         )}
-      </button>
+      </motion.button>
 
       {/* Browser Window */}
-      <div 
-        className="bg-[#FAFAFB] dark:bg-gray-800 rounded-[20px] flex flex-col overflow-hidden transition-all duration-300"
+      <motion.div 
+        className="bg-[#FAFAFB] dark:bg-gray-800 rounded-[20px] flex flex-col overflow-hidden"
         style={{
           width: 'min(1280px, 92vw)',
           height: 'min(760px, 86vh)',
-          boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.12), 0 8px 24px -8px rgba(0, 0, 0, 0.08)',
         }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         {/* Window Chrome - Header Area */}
-        <div className="h-[48px] bg-[#E8EAED] dark:bg-[#2D2D2D] border-b border-gray-300/50 dark:border-gray-700 flex items-end px-2 pb-0">
+        <div className="h-[48px] bg-[#E8F0FE] dark:bg-[#2D2D2D] border-b border-gray-300/30 dark:border-gray-700 flex items-end pb-0">
           {/* Traffic Lights */}
-          <div className="flex gap-1.5 mr-3 mb-2">
+          <div className="flex gap-1.5 ml-4 mr-4 mb-2">
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
@@ -457,20 +501,27 @@ export function ChromeBrowser() {
           
           {/* Tab Strip */}
           <div className="flex-1 flex items-end gap-0.5 overflow-x-auto scrollbar-hide h-full">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => switchTab(tab.id)}
-                onMouseEnter={() => setIsHoveringInteractive(true)}
-                onMouseLeave={() => setIsHoveringInteractive(false)}
-                className={`
-                  group relative flex items-center gap-2 px-4 py-2 text-sm font-normal transition-all duration-150 whitespace-nowrap
-                  ${activeTabId === tab.id 
-                    ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/50 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
-                    : 'bg-[#DADCE0] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-[#D0D2D6] dark:hover:bg-[#3F4043] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
-                  }
-                `}
-              >
+            <AnimatePresence mode="popLayout">
+              {tabs.map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => switchTab(tab.id)}
+                  onMouseEnter={() => setIsHoveringInteractive(true)}
+                  onMouseLeave={() => setIsHoveringInteractive(false)}
+                  className={`
+                    group relative flex items-center gap-2 px-4 py-2 text-sm font-normal whitespace-nowrap
+                    ${activeTabId === tab.id 
+                      ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/30 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
+                      : 'bg-[#E8F0FE] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-[#DCE8F8] dark:hover:bg-[#3F4043] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
+                    }
+                  `}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
                 {/* Favicon */}
                 <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
                   {tab.favicon ? (
@@ -485,147 +536,199 @@ export function ChromeBrowser() {
                 
                 {/* Close Button */}
                 {tabs.length > 1 && (
-                  <button
+                  <motion.button
                     onClick={(e) => closeTab(tab.id, e)}
                     onMouseEnter={() => setIsHoveringInteractive(true)}
                     onMouseLeave={() => setIsHoveringInteractive(false)}
-                    className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+                    className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                       activeTabId === tab.id
                         ? 'opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600'
                         : 'opacity-0 group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   >
                     <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                  </button>
+                  </motion.button>
                 )}
-              </button>
-            ))}
+              </motion.button>
+              ))}
+            </AnimatePresence>
             
             {/* New Tab Button */}
-            <button
+            <motion.button
               onClick={() => addTab('newtab')}
               onMouseEnter={() => setIsHoveringInteractive(true)}
               onMouseLeave={() => setIsHoveringInteractive(false)}
-              className="ml-1 mb-0.5 w-8 h-8 rounded-full bg-transparent hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-150 flex-shrink-0"
+              className="ml-1 mb-0.5 w-8 h-8 rounded-full bg-transparent hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex-shrink-0"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
               title="New Tab"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-            </button>
+            </motion.button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-hidden">
+        <motion.div 
+          className="flex-1 overflow-hidden"
+          key={activeTabId}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
           {renderContent()}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Playback Bar - Shows when music is playing and not on Spotify tab */}
-      {(isPlaying || currentSongIndex > 0) && !isSpotifyTab && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-xl transition-all duration-200">
-            {/* Progress Bar */}
-            <div className="mb-3">
-              <div 
-                onClick={goToSpotifyTab}
-                className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden cursor-pointer"
-              >
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-            
-            <div 
+      <AnimatePresence>
+        {(isPlaying || currentSongIndex > 0) && !isSpotifyTab && (
+          <motion.div 
+            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <motion.div 
+              className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
               onClick={goToSpotifyTab}
               onMouseEnter={() => setIsHoveringInteractive(true)}
               onMouseLeave={() => setIsHoveringInteractive(false)}
-              className="flex items-center gap-2"
+              whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
-              {/* Shuffle Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleShuffle();
-                }}
-                className={`w-8 h-8 flex items-center justify-center transition-opacity ${
-                  isShuffled 
-                    ? 'text-gray-900 dark:text-white opacity-100' 
-                    : 'text-gray-400 dark:text-gray-500 hover:opacity-70'
-                }`}
-                aria-label="Shuffle"
+              {/* Progress Bar */}
+              <div className="mb-3">
+                <div 
+                  onClick={goToSpotifyTab}
+                  className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden cursor-pointer"
+                >
+                  <motion.div 
+                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                    style={{ width: `${progress}%` }}
+                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                  />
+                </div>
+              </div>
+              
+              <div 
+                onClick={goToSpotifyTab}
+                className="flex items-center gap-2"
               >
+                {/* Shuffle Button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleShuffle();
+                  }}
+                  className={`w-8 h-8 flex items-center justify-center ${
+                    isShuffled 
+                      ? 'text-gray-900 dark:text-white opacity-100' 
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                  whileHover={{ scale: 1.15, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  aria-label="Shuffle"
+                >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
                 </svg>
-              </button>
+              </motion.button>
 
-              {/* Previous Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  previousSong();
-                }}
-                className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
-                aria-label="Previous"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-                </svg>
-              </button>
-
-              {/* Play/Pause Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePlay();
-                }}
-                className="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-              >
-                {isPlaying ? (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                {/* Previous Button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    previousSong();
+                  }}
+                  className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"
+                  whileHover={{ scale: 1.15, x: -2 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  aria-label="Previous"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
                   </svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
+                </motion.button>
+
+                {/* Play/Pause Button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                  }}
+                  className="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white"
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                >
+                  {isPlaying ? (
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  )}
+                </motion.button>
+
+                {/* Next Button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextSong();
+                  }}
+                  className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"
+                  whileHover={{ scale: 1.15, x: 2 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  aria-label="Next"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
                   </svg>
-                )}
-              </button>
+                </motion.button>
 
-              {/* Next Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextSong();
-                }}
-                className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
-                aria-label="Next"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-                </svg>
-              </button>
-
-              {/* Song Title and Time */}
-              <div className="flex items-center gap-3 ml-2 flex-1 min-w-0">
-                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium truncate">
-                  {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
-                </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-                  {formatTime(currentTime)} / {formatTime(duration)}
-                </span>
+                {/* Song Title and Time */}
+                <motion.div 
+                  className="flex items-center gap-3 ml-2 flex-1 min-w-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 font-medium truncate">
+                      {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
+                    </div>
+                    {PLAYLIST[currentSongIndex]?.artist && (
+                      <div className="text-xs text-gray-500 dark:text-gray-500 truncate">
+                        {PLAYLIST[currentSongIndex]?.artist}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </span>
+                </motion.div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
