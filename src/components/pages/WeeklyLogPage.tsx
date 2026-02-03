@@ -76,10 +76,6 @@ export function WeeklyLogPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const { scrollYProgress } = useScroll({
-    container: containerRef,
-  });
-
   // Calculate which post is currently in view
   useEffect(() => {
     const handleScroll = () => {
@@ -93,7 +89,7 @@ export function WeeklyLogPage() {
       let minDistance = Infinity;
 
       postRefs.current.forEach((ref, index) => {
-        if (ref) {
+        if (ref && containerRef.current) {
           const rect = ref.getBoundingClientRect();
           const containerRect = containerRef.current.getBoundingClientRect();
           const elementTop = rect.top - containerRect.top + containerRef.current.scrollTop;
@@ -220,7 +216,7 @@ export function WeeklyLogPage() {
               <motion.article
                 key={post.id}
                 ref={(el) => {
-                  postRefs.current[index] = el;
+                  postRefs.current[index] = el as HTMLDivElement | null;
                 }}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
