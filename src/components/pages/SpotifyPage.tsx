@@ -8,6 +8,10 @@ interface SpotifyPageProps {
   onPrevious: () => void;
   isShuffled: boolean;
   onToggleShuffle: () => void;
+  currentTime: number;
+  duration: number;
+  progress: number;
+  formatTime: (seconds: number) => string;
 }
 
 export function SpotifyPage({ 
@@ -17,15 +21,33 @@ export function SpotifyPage({
   onNext,
   onPrevious,
   isShuffled,
-  onToggleShuffle
+  onToggleShuffle,
+  currentTime,
+  duration,
+  progress,
+  formatTime
 }: SpotifyPageProps) {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-6">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-8 px-8">
       {/* Song Title */}
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+        <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-2">
           {currentSong.title}
         </h2>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full max-w-md">
+        <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
       </div>
 
       {/* Controls */}

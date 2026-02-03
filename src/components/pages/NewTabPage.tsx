@@ -27,11 +27,11 @@ const SHORTCUTS = [
     )
   },
   { 
-    id: 'chatgpt', 
-    title: 'ChatGPT', 
+    id: 'games', 
+    title: 'Games', 
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.751 9.75l-3.72-3.72a3 3 0 00-4.242 0l-3.72 3.72m0 4.5l3.72 3.72a3 3 0 004.242 0l3.72-3.72m-4.5-4.5l4.5-4.5m0 4.5l-4.5 4.5m-4.5-4.5l4.5 4.5" />
       </svg>
     )
   },
