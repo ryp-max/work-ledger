@@ -6,8 +6,9 @@ import { WeeklyLogPage } from './pages/WeeklyLogPage';
 import { PhotosPage } from './pages/PhotosPage';
 import { GuestbookPage } from './pages/GuestbookPage';
 import { ChatGPTPage } from './pages/ChatGPTPage';
+import { SpotifyPage } from './pages/SpotifyPage';
 
-export type PageType = 'newtab' | 'weekly-log' | 'photos' | 'guestbook' | 'chatgpt' | 'url';
+export type PageType = 'newtab' | 'weekly-log' | 'photos' | 'guestbook' | 'chatgpt' | 'spotify' | 'url';
 
 export interface Tab {
   id: string;
@@ -141,6 +142,8 @@ export function ChromeBrowser() {
     if (bookmark.url.startsWith('chrome://')) {
       const pageType = bookmark.url.replace('chrome://', '') as PageType;
       addTab(pageType, bookmark.url, bookmark.title);
+    } else if (bookmark.id === 'spotify') {
+      addTab('spotify', bookmark.url, bookmark.title);
     } else {
       addTab('url', bookmark.url, bookmark.title);
     }
@@ -167,6 +170,8 @@ export function ChromeBrowser() {
         return <GuestbookPage />;
       case 'chatgpt':
         return <ChatGPTPage />;
+      case 'spotify':
+        return <SpotifyPage />;
       case 'url':
         return (
           <iframe
