@@ -42,6 +42,7 @@ export function ChromeBrowser() {
     }
     return false;
   });
+  const [isClosed, setIsClosed] = useState(false);
   const omniboxRef = useRef<HTMLInputElement>(null);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
@@ -411,9 +412,23 @@ export function ChromeBrowser() {
   };
 
   // Physics-based cursor movement
-  const cursorX = useSpring(cursorPos.x, { stiffness: 500, damping: 30 });
-  const cursorY = useSpring(cursorPos.y, { stiffness: 500, damping: 30 });
-  const cursorScale = useSpring(isHoveringInteractive ? 2 : 1, { stiffness: 400, damping: 25 });
+  const cursorX = useMotionValue(cursorPos.x);
+  const cursorY = useMotionValue(cursorPos.y);
+  const cursorScale = useMotionValue(isHoveringInteractive ? 2 : 1);
+  
+  const springX = useSpring(cursorX, { stiffness: 500, damping: 30 });
+  const springY = useSpring(cursorY, { stiffness: 500, damping: 30 });
+  const springScale = useSpring(cursorScale, { stiffness: 400, damping: 25 });
+  
+  // Update motion values when cursor position changes
+  useEffect(() => {
+    cursorX.set(cursorPos.x);
+    cursorY.set(cursorPos.y);
+  }, [cursorPos.x, cursorPos.y, cursorX, cursorY]);
+  
+  useEffect(() => {
+    cursorScale.set(isHoveringInteractive ? 2 : 1);
+  }, [isHoveringInteractive, cursorScale]);
 
   // Global click handler for keyboard sound
   useEffect(() => {
@@ -450,12 +465,40 @@ export function ChromeBrowser() {
       <motion.div
         className="custom-cursor"
         style={{
-          left: cursorX,
-          top: cursorY,
-          scale: cursorScale,
+          left: springX,
+          top: springY,
+          scale: springScale,
         }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
       />
+
+      {/* Chrome Icon - Shown when browser is closed */}
+      <AnimatePresence>
+        {isClosed && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="fixed inset-0 flex items-center justify-center z-40"
+          >
+            <motion.button
+              onClick={() => setIsClosed(false)}
+              onMouseEnter={() => setIsHoveringInteractive(true)}
+              onMouseLeave={() => setIsHoveringInteractive(false)}
+              className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-2xl flex items-center justify-center cursor-pointer"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="white" opacity="0.3"/>
+                <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="white" opacity="0.5"/>
+                <circle cx="12" cy="12" r="3" fill="white"/>
+              </svg>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Dark Mode Toggle - Top Right */}
       <motion.button
@@ -480,21 +523,32 @@ export function ChromeBrowser() {
       </motion.button>
 
       {/* Browser Window */}
-      <motion.div 
-        className="bg-[#FAFAFB] dark:bg-gray-800 rounded-[20px] flex flex-col overflow-hidden"
-        style={{
-          width: 'min(1280px, 92vw)',
-          height: 'min(760px, 86vh)',
-        }}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
+      <AnimatePresence>
+        {!isClosed && (
+          <motion.div 
+            className="bg-[#FAFAFB] dark:bg-gray-800 rounded-[20px] flex flex-col overflow-hidden shadow-2xl"
+            style={{
+              width: 'min(1280px, 92vw)',
+              height: 'min(760px, 86vh)',
+            }}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
         {/* Window Chrome - Header Area */}
         <div className="h-[48px] bg-[#E8F0FE] dark:bg-[#2D2D2D] border-b border-gray-300/30 dark:border-gray-700 flex items-end pb-0">
           {/* Traffic Lights */}
           <div className="flex gap-1.5 ml-4 mr-4 mb-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <motion.button
+              onClick={() => setIsClosed(true)}
+              onMouseEnter={() => setIsHoveringInteractive(true)}
+              onMouseLeave={() => setIsHoveringInteractive(false)}
+              className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            />
             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
           </div>
@@ -587,7 +641,9 @@ export function ChromeBrowser() {
         >
           {renderContent()}
         </motion.div>
-      </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Playback Bar - Shows when music is playing and not on Spotify tab */}
       <AnimatePresence>

@@ -32,8 +32,8 @@ export const playKeyboardClick = async () => {
     clickFilter.frequency.setValueAtTime(2000, now);
     clickFilter.Q.setValueAtTime(8, now);
     
-    clickGain.gain.setValueAtTime(0.25, now);
-    clickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.01);
+    clickGain.gain.setValueAtTime(0.15, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.006, now + 0.01);
     
     click.connect(clickFilter);
     clickFilter.connect(clickGain);
@@ -55,8 +55,8 @@ export const playKeyboardClick = async () => {
     thockFilter.frequency.setValueAtTime(250, now);
     
     thockGain.gain.setValueAtTime(0, now);
-    thockGain.gain.setValueAtTime(0.2, now + 0.003);
-    thockGain.gain.exponentialRampToValueAtTime(0.01, now + 0.025);
+    thockGain.gain.setValueAtTime(0.12, now + 0.003);
+    thockGain.gain.exponentialRampToValueAtTime(0.006, now + 0.025);
     
     thock.connect(thockFilter);
     thockFilter.connect(thockGain);
@@ -73,8 +73,8 @@ export const playKeyboardClick = async () => {
     release.frequency.setValueAtTime(800, now + 0.008);
     release.frequency.exponentialRampToValueAtTime(400, now + 0.015);
     
-    releaseGain.gain.setValueAtTime(0.05, now + 0.008);
-    releaseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.015);
+    releaseGain.gain.setValueAtTime(0.03, now + 0.008);
+    releaseGain.gain.exponentialRampToValueAtTime(0.006, now + 0.015);
     
     release.connect(releaseGain);
     releaseGain.connect(ctx.destination);
