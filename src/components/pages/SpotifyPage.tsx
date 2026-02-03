@@ -8,8 +8,6 @@ interface SpotifyPageProps {
   currentSong: { id: number; title: string; src: string; artist?: string };
   onNext: () => void;
   onPrevious: () => void;
-  isShuffled: boolean;
-  onToggleShuffle: () => void;
   currentTime: number;
   duration: number;
   progress: number;
@@ -22,8 +20,6 @@ export function SpotifyPage({
   currentSong,
   onNext,
   onPrevious,
-  isShuffled,
-  onToggleShuffle,
   currentTime,
   duration,
   progress,
@@ -60,24 +56,6 @@ export function SpotifyPage({
 
       {/* Controls */}
       <div className="flex items-center gap-4">
-        {/* Shuffle Button */}
-        <motion.button
-          onClick={onToggleShuffle}
-          className={`w-10 h-10 flex items-center justify-center ${
-            isShuffled 
-              ? 'text-gray-900 dark:text-white opacity-100' 
-              : 'text-gray-400 dark:text-gray-500'
-          }`}
-          whileHover={{ scale: 1.15, rotate: 180 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          aria-label="Shuffle"
-        >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
-          </svg>
-        </motion.button>
-
         {/* Previous Button */}
         <motion.button
           onClick={onPrevious}

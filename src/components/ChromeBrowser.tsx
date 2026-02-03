@@ -50,12 +50,13 @@ export function ChromeBrowser() {
     { id: 1, title: 'Overdrive', artist: 'TWC', src: '/audio/overdrive.mp3' },
     { id: 2, title: 'Beautiful Escape (feat. Zak Abel)', artist: 'Tom Misch', src: '/audio/Beautiful Escape (feat. Zak Abel) Tom Misch.mp3' },
     { id: 3, title: 'Take Care', artist: 'GUMMY (거미), Dynamicduo (다이나믹 듀오)', src: '/audio/Take Care.mp3' },
+    { id: 4, title: 'We Are', artist: 'Woo, Loco, GRAY', src: '/audio/We Are.mp3' },
+    { id: 5, title: 'Aperture', artist: 'Harry Styles', src: '/audio/Aperture.mp3' },
   ];
 
   // Audio state - persists across tab switches
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const [isShuffled, setIsShuffled] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -210,32 +211,15 @@ export function ChromeBrowser() {
   }, []);
 
   const nextSong = useCallback(() => {
-    if (isShuffled) {
-      // Random song that's not the current one
-      const availableIndices = PLAYLIST.map((_, i) => i).filter(i => i !== currentSongIndex);
-      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-      playSong(randomIndex);
-    } else {
-      const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
-      playSong(nextIndex);
-    }
-  }, [currentSongIndex, isShuffled, playSong]);
+    const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
+    playSong(nextIndex);
+  }, [currentSongIndex, playSong]);
 
   const previousSong = useCallback(() => {
-    if (isShuffled) {
-      // Random song that's not the current one
-      const availableIndices = PLAYLIST.map((_, i) => i).filter(i => i !== currentSongIndex);
-      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-      playSong(randomIndex);
-    } else {
-      const prevIndex = (currentSongIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
-      playSong(prevIndex);
-    }
-  }, [currentSongIndex, isShuffled, playSong]);
+    const prevIndex = (currentSongIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
+    playSong(prevIndex);
+  }, [currentSongIndex, playSong]);
 
-  const toggleShuffle = useCallback(() => {
-    setIsShuffled(!isShuffled);
-  }, [isShuffled]);
 
   // Switch to Spotify tab
   const goToSpotifyTab = useCallback(() => {
@@ -301,14 +285,8 @@ export function ChromeBrowser() {
     const handleEnded = () => {
       setIsPlaying(false);
       // Auto-play next song when current ends
-      if (isShuffled) {
-        const availableIndices = PLAYLIST.map((_, i) => i).filter(i => i !== currentSongIndex);
-        const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-        playSong(randomIndex);
-      } else {
-        const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
-        playSong(nextIndex);
-      }
+      const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
+      playSong(nextIndex);
     };
     
     audioRef.current.addEventListener('ended', handleEnded);
@@ -317,7 +295,7 @@ export function ChromeBrowser() {
         audioRef.current.removeEventListener('ended', handleEnded);
       }
     };
-  }, [currentSongIndex, isShuffled, playSong]);
+  }, [currentSongIndex, playSong]);
 
   // Update audio source when song changes
   useEffect(() => {
@@ -376,8 +354,6 @@ export function ChromeBrowser() {
             currentSong={PLAYLIST[currentSongIndex]}
             onNext={nextSong}
             onPrevious={previousSong}
-            isShuffled={isShuffled}
-            onToggleShuffle={toggleShuffle}
             currentTime={currentTime}
             duration={duration}
             progress={progress}
@@ -603,14 +579,15 @@ export function ChromeBrowser() {
       <AnimatePresence>
         {(isPlaying || currentSongIndex > 0) && !isSpotifyTab && (
           <motion.div 
-            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4"
+            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <motion.div 
-              className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
+              className="bg-white dark:bg-gray-800 rounded-2xl px-3 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
+              style={{ width: 'fit-content', maxWidth: '500px' }}
               onClick={goToSpotifyTab}
               whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -633,27 +610,6 @@ export function ChromeBrowser() {
                 onClick={goToSpotifyTab}
                 className="flex items-center gap-2"
               >
-                {/* Shuffle Button */}
-                <motion.button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleShuffle();
-                  }}
-                  className={`w-8 h-8 flex items-center justify-center ${
-                    isShuffled 
-                      ? 'text-gray-900 dark:text-white opacity-100' 
-                      : 'text-gray-400 dark:text-gray-500'
-                  }`}
-                  whileHover={{ scale: 1.15, rotate: 180 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  aria-label="Shuffle"
-                >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
-                </svg>
-              </motion.button>
-
                 {/* Previous Button */}
                 <motion.button
                   onClick={(e) => {
@@ -711,7 +667,7 @@ export function ChromeBrowser() {
                   </svg>
                 </motion.button>
 
-                {/* Song Title and Time */}
+                {/* Song Title */}
                 <motion.div 
                   className="flex items-center gap-3 ml-2 flex-1 min-w-0"
                   initial={{ opacity: 0 }}
@@ -728,9 +684,6 @@ export function ChromeBrowser() {
                       </div>
                     )}
                   </div>
-                  <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-                    {formatTime(currentTime)} / {formatTime(duration)}
-                  </span>
                 </motion.div>
               </div>
             </motion.div>
