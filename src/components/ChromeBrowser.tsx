@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { playKeyboardClick } from '@/lib/keyboard-sound';
 import { NewTabPage } from './pages/NewTabPage';
 import { WeeklyLogPage } from './pages/WeeklyLogPage';
@@ -44,8 +44,6 @@ export function ChromeBrowser() {
   });
   const [isClosed, setIsClosed] = useState(false);
   const omniboxRef = useRef<HTMLInputElement>(null);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
   
   // Playlist
   const PLAYLIST = [
@@ -61,16 +59,6 @@ export function ChromeBrowser() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Track mouse position for custom cursor
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   // Apply dark mode class on mount and when it changes
   useEffect(() => {
@@ -370,7 +358,6 @@ export function ChromeBrowser() {
             onBookmarkClick={handleBookmarkClick}
             onOmniboxSubmit={handleOmniboxSubmit}
             omniboxRef={omniboxRef}
-            onInteractiveHover={setIsHoveringInteractive}
           />
         );
       case 'weekly-log':
@@ -411,24 +398,6 @@ export function ChromeBrowser() {
     }
   };
 
-  // Physics-based cursor movement
-  const cursorX = useMotionValue(cursorPos.x);
-  const cursorY = useMotionValue(cursorPos.y);
-  const cursorScale = useMotionValue(isHoveringInteractive ? 2 : 1);
-  
-  const springX = useSpring(cursorX, { stiffness: 500, damping: 30 });
-  const springY = useSpring(cursorY, { stiffness: 500, damping: 30 });
-  const springScale = useSpring(cursorScale, { stiffness: 400, damping: 25 });
-  
-  // Update motion values when cursor position changes
-  useEffect(() => {
-    cursorX.set(cursorPos.x);
-    cursorY.set(cursorPos.y);
-  }, [cursorPos.x, cursorPos.y, cursorX, cursorY]);
-  
-  useEffect(() => {
-    cursorScale.set(isHoveringInteractive ? 2 : 1);
-  }, [isHoveringInteractive, cursorScale]);
 
   // Global click handler for keyboard sound
   useEffect(() => {
@@ -461,16 +430,6 @@ export function ChromeBrowser() {
 
   return (
     <div className="w-full h-screen bg-[#EEF0F3] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
-      {/* Custom Cursor with Physics */}
-      <motion.div
-        className="custom-cursor"
-        style={{
-          left: springX,
-          top: springY,
-          scale: springScale,
-        }}
-      />
-
       {/* Chrome Icon - Shown when browser is closed */}
       <AnimatePresence>
         {isClosed && (
@@ -483,8 +442,6 @@ export function ChromeBrowser() {
           >
             <motion.button
               onClick={() => setIsClosed(false)}
-              onMouseEnter={() => setIsHoveringInteractive(true)}
-              onMouseLeave={() => setIsHoveringInteractive(false)}
               className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-2xl flex items-center justify-center cursor-pointer"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
@@ -503,8 +460,6 @@ export function ChromeBrowser() {
       {/* Dark Mode Toggle - Top Right */}
       <motion.button
         onClick={() => setDarkMode(!darkMode)}
-        onMouseEnter={() => setIsHoveringInteractive(true)}
-        onMouseLeave={() => setIsHoveringInteractive(false)}
         className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center"
         whileHover={{ scale: 1.1, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
         whileTap={{ scale: 0.95 }}
@@ -546,8 +501,6 @@ export function ChromeBrowser() {
                 e.stopPropagation();
                 setIsClosed(true);
               }}
-              onMouseEnter={() => setIsHoveringInteractive(true)}
-              onMouseLeave={() => setIsHoveringInteractive(false)}
               className="relative z-50 flex-shrink-0 p-1 -m-1"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -567,8 +520,6 @@ export function ChromeBrowser() {
                 <motion.button
                   key={tab.id}
                   onClick={() => switchTab(tab.id)}
-                  onMouseEnter={() => setIsHoveringInteractive(true)}
-                  onMouseLeave={() => setIsHoveringInteractive(false)}
                   className={`
                     group relative flex items-center gap-2 px-4 py-2 text-sm font-normal whitespace-nowrap
                     ${activeTabId === tab.id 
@@ -599,8 +550,6 @@ export function ChromeBrowser() {
                 {tabs.length > 1 && (
                   <motion.button
                     onClick={(e) => closeTab(tab.id, e)}
-                    onMouseEnter={() => setIsHoveringInteractive(true)}
-                    onMouseLeave={() => setIsHoveringInteractive(false)}
                     className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                       activeTabId === tab.id
                         ? 'opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -622,8 +571,6 @@ export function ChromeBrowser() {
             {/* New Tab Button */}
             <motion.button
               onClick={() => addTab('newtab')}
-              onMouseEnter={() => setIsHoveringInteractive(true)}
-              onMouseLeave={() => setIsHoveringInteractive(false)}
               className="ml-1 mb-0.5 w-8 h-8 rounded-full bg-transparent hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex-shrink-0"
               whileHover={{ scale: 1.1, rotate: 90 }}
               whileTap={{ scale: 0.9 }}
@@ -665,8 +612,6 @@ export function ChromeBrowser() {
             <motion.div 
               className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
               onClick={goToSpotifyTab}
-              onMouseEnter={() => setIsHoveringInteractive(true)}
-              onMouseLeave={() => setIsHoveringInteractive(false)}
               whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
