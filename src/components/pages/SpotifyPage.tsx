@@ -37,11 +37,11 @@ export function SpotifyPage({
     <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-8 px-8">
       {/* Song Title */}
       <div className="text-center">
-        <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1">
+        <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1 uppercase tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}>
           {currentSong.title}
         </h2>
         {currentSong.artist && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}>
             {currentSong.artist}
           </p>
         )}
@@ -56,7 +56,7 @@ export function SpotifyPage({
             transition={{ type: "spring", stiffness: 200, damping: 25 }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}>
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
