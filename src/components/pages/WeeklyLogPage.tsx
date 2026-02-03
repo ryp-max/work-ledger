@@ -147,10 +147,7 @@ export function WeeklyLogPage() {
                             ease: [0.16, 1, 0.3, 1]
                           }}
                           className="relative aspect-square bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer group/photo"
-                          whileHover={{ 
-                            scale: 1.02,
-                            transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-                          }}
+                          whileHover={{ scale: 1.02 }}
                         >
                           <img
                             src={photo}
