@@ -131,7 +131,7 @@ export function WeeklyLogPage() {
                 <div className="space-y-8 mt-8">
                   {/* Photos */}
                   {post.photos && post.photos.length > 0 && (
-                    <div className={`grid gap-4 ${
+                    <div className={`grid gap-4 justify-center ${
                       post.photos.length === 1 ? 'grid-cols-1' :
                       post.photos.length === 2 ? 'grid-cols-2' :
                       'grid-cols-3'
@@ -166,9 +166,9 @@ export function WeeklyLogPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3, duration: 0.4 }}
-                      className="border-l-2 border-gray-200 dark:border-gray-800 pl-6 py-2"
+                      className="py-2 mx-auto max-w-2xl"
                     >
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 text-center">
                         Work in Progress
                       </h3>
                       <ul className="space-y-3">
@@ -178,7 +178,7 @@ export function WeeklyLogPage() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.35 + idx * 0.05, duration: 0.3 }}
-                            className="text-gray-700 dark:text-gray-300 leading-relaxed flex items-start gap-3"
+                            className="text-gray-700 dark:text-gray-300 leading-relaxed flex items-start justify-center gap-3"
                           >
                             <span className="text-gray-400 dark:text-gray-600 mt-1.5 text-xs">—</span>
                             <span>{item}</span>
@@ -194,9 +194,9 @@ export function WeeklyLogPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4, duration: 0.4 }}
-                      className="border-l-2 border-gray-200 dark:border-gray-800 pl-6 py-2"
+                      className="py-2 mx-auto max-w-2xl"
                     >
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 text-center">
                         Next Week Goals
                       </h3>
                       <ul className="space-y-3">
@@ -206,7 +206,7 @@ export function WeeklyLogPage() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.45 + idx * 0.05, duration: 0.3 }}
-                            className="text-gray-700 dark:text-gray-300 leading-relaxed flex items-start gap-3"
+                            className="text-gray-700 dark:text-gray-300 leading-relaxed flex items-start justify-center gap-3"
                           >
                             <span className="text-gray-400 dark:text-gray-600 mt-1.5 text-xs">—</span>
                             <span>{item}</span>
@@ -222,9 +222,9 @@ export function WeeklyLogPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5, duration: 0.4 }}
-                      className="border-l-2 border-gray-200 dark:border-gray-800 pl-6 py-2"
+                      className="py-2 mx-auto max-w-2xl"
                     >
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 text-center">
                         Life Updates
                       </h3>
                       <ul className="space-y-3">
@@ -234,7 +234,7 @@ export function WeeklyLogPage() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.55 + idx * 0.05, duration: 0.3 }}
-                            className="text-gray-700 dark:text-gray-300 leading-relaxed flex items-start gap-3"
+                            className="text-gray-700 dark:text-gray-300 leading-relaxed flex items-start justify-center gap-3"
                           >
                             <span className="text-gray-400 dark:text-gray-600 mt-1.5 text-xs">—</span>
                             <span>{item}</span>

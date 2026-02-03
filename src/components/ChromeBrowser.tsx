@@ -57,9 +57,38 @@ export function ChromeBrowser() {
   // Audio state - persists across tab switches
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [isShuffled, setIsShuffled] = useState(false);
+  const [isRepeating, setIsRepeating] = useState(false);
+  const [shuffledOrder, setShuffledOrder] = useState<number[]>([]);
+  const [shuffleIndex, setShuffleIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Shuffle array function (Fisher-Yates algorithm)
+  const shuffleArray = useCallback((array: number[]): number[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, []);
+
+  // Initialize shuffled order when shuffle is enabled
+  useEffect(() => {
+    if (isShuffled) {
+      const indices = PLAYLIST.map((_, i) => i);
+      const shuffled = shuffleArray(indices);
+      const currentIndex = shuffled.indexOf(currentSongIndex);
+      if (currentIndex === 0 && shuffled.length > 1) {
+        const swapIndex = Math.floor(Math.random() * (shuffled.length - 1)) + 1;
+        [shuffled[0], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[0]];
+      }
+      setShuffledOrder(shuffled);
+      setShuffleIndex(shuffled.indexOf(currentSongIndex));
+    }
+  }, [isShuffled, shuffleArray, currentSongIndex]);
 
   // Apply dark mode class on mount and when it changes
   useEffect(() => {
@@ -208,17 +237,70 @@ export function ChromeBrowser() {
 
   const playSong = useCallback((index: number) => {
     setCurrentSongIndex(index);
-  }, []);
+    // Update shuffle index if shuffle is enabled
+    if (isShuffled && shuffledOrder.length > 0) {
+      const newShuffleIndex = shuffledOrder.indexOf(index);
+      if (newShuffleIndex !== -1) {
+        setShuffleIndex(newShuffleIndex);
+      }
+    }
+  }, [isShuffled, shuffledOrder]);
 
   const nextSong = useCallback(() => {
-    const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
-    playSong(nextIndex);
-  }, [currentSongIndex, playSong]);
+    if (isShuffled && shuffledOrder.length > 0) {
+      let nextShuffleIndex = shuffleIndex + 1;
+      if (nextShuffleIndex >= shuffledOrder.length) {
+        const newShuffled = shuffleArray(PLAYLIST.map((_, i) => i));
+        setShuffledOrder(newShuffled);
+        setShuffleIndex(0);
+        playSong(newShuffled[0]);
+      } else {
+        setShuffleIndex(nextShuffleIndex);
+        playSong(shuffledOrder[nextShuffleIndex]);
+      }
+    } else {
+      const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
+      playSong(nextIndex);
+    }
+  }, [currentSongIndex, isShuffled, shuffledOrder, shuffleIndex, shuffleArray, playSong]);
 
   const previousSong = useCallback(() => {
-    const prevIndex = (currentSongIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
-    playSong(prevIndex);
-  }, [currentSongIndex, playSong]);
+    if (isShuffled && shuffledOrder.length > 0) {
+      let prevShuffleIndex = shuffleIndex - 1;
+      if (prevShuffleIndex < 0) {
+        prevShuffleIndex = shuffledOrder.length - 1;
+      }
+      setShuffleIndex(prevShuffleIndex);
+      playSong(shuffledOrder[prevShuffleIndex]);
+    } else {
+      const prevIndex = (currentSongIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
+      playSong(prevIndex);
+    }
+  }, [currentSongIndex, isShuffled, shuffledOrder, shuffleIndex, playSong]);
+
+  const toggleShuffle = useCallback(() => {
+    const newShuffledState = !isShuffled;
+    setIsShuffled(newShuffledState);
+    
+    if (newShuffledState) {
+      const indices = PLAYLIST.map((_, i) => i);
+      const shuffled = shuffleArray(indices);
+      const currentIndex = shuffled.indexOf(currentSongIndex);
+      if (currentIndex === 0 && shuffled.length > 1) {
+        const swapIndex = Math.floor(Math.random() * (shuffled.length - 1)) + 1;
+        [shuffled[0], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[0]];
+      }
+      setShuffledOrder(shuffled);
+      setShuffleIndex(shuffled.indexOf(currentSongIndex));
+    } else {
+      setShuffledOrder([]);
+      setShuffleIndex(0);
+    }
+  }, [isShuffled, currentSongIndex, shuffleArray]);
+
+  const toggleRepeat = useCallback(() => {
+    setIsRepeating(!isRepeating);
+  }, [isRepeating]);
 
 
   // Switch to Spotify tab
@@ -284,9 +366,28 @@ export function ChromeBrowser() {
     
     const handleEnded = () => {
       setIsPlaying(false);
-      // Auto-play next song when current ends
-      const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
-      playSong(nextIndex);
+      
+      if (isRepeating) {
+        // If repeating, play the same song again
+        playSong(currentSongIndex);
+      } else {
+        // Auto-play next song when current ends
+        if (isShuffled && shuffledOrder.length > 0) {
+          let nextShuffleIndex = shuffleIndex + 1;
+          if (nextShuffleIndex >= shuffledOrder.length) {
+            const newShuffled = shuffleArray(PLAYLIST.map((_, i) => i));
+            setShuffledOrder(newShuffled);
+            setShuffleIndex(0);
+            playSong(newShuffled[0]);
+          } else {
+            setShuffleIndex(nextShuffleIndex);
+            playSong(shuffledOrder[nextShuffleIndex]);
+          }
+        } else {
+          const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
+          playSong(nextIndex);
+        }
+      }
     };
     
     audioRef.current.addEventListener('ended', handleEnded);
@@ -295,7 +396,7 @@ export function ChromeBrowser() {
         audioRef.current.removeEventListener('ended', handleEnded);
       }
     };
-  }, [currentSongIndex, playSong]);
+  }, [currentSongIndex, isRepeating, isShuffled, shuffledOrder, shuffleIndex, shuffleArray, playSong]);
 
   // Update audio source when song changes
   useEffect(() => {
@@ -354,6 +455,10 @@ export function ChromeBrowser() {
             currentSong={PLAYLIST[currentSongIndex]}
             onNext={nextSong}
             onPrevious={previousSong}
+            isShuffled={isShuffled}
+            onToggleShuffle={toggleShuffle}
+            isRepeating={isRepeating}
+            onToggleRepeat={toggleRepeat}
             currentTime={currentTime}
             duration={duration}
             progress={progress}
@@ -610,6 +715,27 @@ export function ChromeBrowser() {
                 onClick={goToSpotifyTab}
                 className="flex items-center gap-2"
               >
+                {/* Shuffle Button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleShuffle();
+                  }}
+                  className={`w-8 h-8 flex items-center justify-center ${
+                    isShuffled 
+                      ? 'text-gray-900 dark:text-white opacity-100' 
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                  whileHover={{ scale: 1.15, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  aria-label="Shuffle"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
+                  </svg>
+                </motion.button>
+
                 {/* Previous Button */}
                 <motion.button
                   onClick={(e) => {
@@ -627,7 +753,7 @@ export function ChromeBrowser() {
                   </svg>
                 </motion.button>
 
-                {/* Play/Pause Button */}
+                {/* Play/Pause Button - Centered */}
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -664,6 +790,27 @@ export function ChromeBrowser() {
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                  </svg>
+                </motion.button>
+
+                {/* Repeat Button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleRepeat();
+                  }}
+                  className={`w-8 h-8 flex items-center justify-center ${
+                    isRepeating 
+                      ? 'text-gray-900 dark:text-white opacity-100' 
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  aria-label="Repeat"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v6z"/>
                   </svg>
                 </motion.button>
 
