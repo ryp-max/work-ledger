@@ -586,7 +586,7 @@ export function ChromeBrowser() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <motion.div 
-              className="bg-white dark:bg-gray-800 rounded-2xl px-3 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
+              className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
               style={{ width: 'fit-content', maxWidth: '500px' }}
               onClick={goToSpotifyTab}
               whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
