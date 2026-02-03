@@ -44,8 +44,16 @@ export function ChromeBrowser() {
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
   
+  // Playlist
+  const PLAYLIST = [
+    { id: 1, title: 'Overdrive', src: '/audio/overdrive.mp3' },
+    { id: 2, title: 'Beautiful Escape (feat. Zak Abel)', src: '/audio/Beautiful Escape (feat. Zak Abel) Tom Misch.mp3' },
+  ];
+
   // Audio state - persists across tab switches
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [isShuffled, setIsShuffled] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Track mouse position for custom cursor
@@ -94,6 +102,15 @@ export function ChromeBrowser() {
   }, [tabs]);
 
   const addTab = useCallback((pageType: PageType = 'newtab', url?: string, title?: string) => {
+    // If trying to add Spotify tab, check if one already exists
+    if (pageType === 'spotify') {
+      const existingSpotifyTab = tabs.find(t => t.pageType === 'spotify');
+      if (existingSpotifyTab) {
+        setActiveTabId(existingSpotifyTab.id);
+        return;
+      }
+    }
+    
     const newTab: Tab = {
       id: Date.now().toString(),
       title: title || 'New Tab',
@@ -102,7 +119,7 @@ export function ChromeBrowser() {
     };
     setTabs(prev => [...prev, newTab]);
     setActiveTabId(newTab.id);
-  }, []);
+  }, [tabs]);
 
   const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -169,15 +186,57 @@ export function ChromeBrowser() {
     }
   }, [isPlaying]);
 
+  const playSong = useCallback((index: number) => {
+    setCurrentSongIndex(index);
+  }, []);
+
+  const nextSong = useCallback(() => {
+    if (isShuffled) {
+      // Random song that's not the current one
+      const availableIndices = PLAYLIST.map((_, i) => i).filter(i => i !== currentSongIndex);
+      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      playSong(randomIndex);
+    } else {
+      const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
+      playSong(nextIndex);
+    }
+  }, [currentSongIndex, isShuffled, playSong]);
+
+  const previousSong = useCallback(() => {
+    if (isShuffled) {
+      // Random song that's not the current one
+      const availableIndices = PLAYLIST.map((_, i) => i).filter(i => i !== currentSongIndex);
+      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      playSong(randomIndex);
+    } else {
+      const prevIndex = (currentSongIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
+      playSong(prevIndex);
+    }
+  }, [currentSongIndex, isShuffled, playSong]);
+
+  const toggleShuffle = useCallback(() => {
+    setIsShuffled(!isShuffled);
+  }, [isShuffled]);
+
+  // Switch to Spotify tab
+  const goToSpotifyTab = useCallback(() => {
+    const spotifyTab = tabs.find(t => t.pageType === 'spotify');
+    if (spotifyTab) {
+      switchTab(spotifyTab.id);
+    } else {
+      // If no Spotify tab exists, create one
+      addTab('spotify', 'chrome://spotify', 'Spotify');
+    }
+  }, [tabs, switchTab, addTab]);
+
   // Initialize audio element
   useEffect(() => {
     if (!audioRef.current) {
-      audioRef.current = new Audio('/audio/overdrive.mp3');
-      audioRef.current.loop = true;
+      audioRef.current = new Audio(PLAYLIST[currentSongIndex].src);
+      audioRef.current.loop = false; // Don't loop individual songs, handle playlist looping
       
       audioRef.current.addEventListener('play', () => setIsPlaying(true));
       audioRef.current.addEventListener('pause', () => setIsPlaying(false));
-      audioRef.current.addEventListener('ended', () => setIsPlaying(false));
     }
     
     return () => {
@@ -188,6 +247,51 @@ export function ChromeBrowser() {
       }
     };
   }, []);
+
+  // Handle song ended event
+  useEffect(() => {
+    if (!audioRef.current) return;
+    
+    const handleEnded = () => {
+      setIsPlaying(false);
+      // Auto-play next song when current ends
+      if (isShuffled) {
+        const availableIndices = PLAYLIST.map((_, i) => i).filter(i => i !== currentSongIndex);
+        const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        playSong(randomIndex);
+      } else {
+        const nextIndex = (currentSongIndex + 1) % PLAYLIST.length;
+        playSong(nextIndex);
+      }
+    };
+    
+    audioRef.current.addEventListener('ended', handleEnded);
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener('ended', handleEnded);
+      }
+    };
+  }, [currentSongIndex, isShuffled, playSong]);
+
+  // Update audio source when song changes
+  useEffect(() => {
+    if (!audioRef.current) return;
+    
+    const wasPlaying = isPlaying;
+    const currentSrc = audioRef.current.src.replace(window.location.origin, '');
+    const newSrc = PLAYLIST[currentSongIndex].src;
+    
+    if (currentSrc !== newSrc) {
+      audioRef.current.pause();
+      audioRef.current.src = newSrc;
+      audioRef.current.load();
+      if (wasPlaying) {
+        audioRef.current.play().catch(err => {
+          console.error('Error playing audio:', err);
+        });
+      }
+    }
+  }, [currentSongIndex, isPlaying]);
 
   const renderContent = () => {
     switch (activeTab.pageType) {
@@ -209,7 +313,17 @@ export function ChromeBrowser() {
       case 'chatgpt':
         return <ChatGPTPage />;
       case 'spotify':
-        return <SpotifyPage isPlaying={isPlaying} onTogglePlay={togglePlay} />;
+        return (
+          <SpotifyPage 
+            isPlaying={isPlaying} 
+            onTogglePlay={togglePlay}
+            currentSong={PLAYLIST[currentSongIndex]}
+            onNext={nextSong}
+            onPrevious={previousSong}
+            isShuffled={isShuffled}
+            onToggleShuffle={toggleShuffle}
+          />
+        );
       case 'url':
         return (
           <iframe
@@ -320,22 +434,85 @@ export function ChromeBrowser() {
       </div>
 
       {/* Playback Bar - Shows when music is playing and not on Spotify tab */}
-      {isPlaying && !isSpotifyTab && (
+      {(isPlaying || currentSongIndex > 0) && !isSpotifyTab && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-full px-6 py-3 shadow-lg border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+          <div 
+            onClick={goToSpotifyTab}
+            onMouseEnter={() => setIsHoveringInteractive(true)}
+            onMouseLeave={() => setIsHoveringInteractive(false)}
+            className="bg-white dark:bg-gray-800 rounded-full px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2 cursor-pointer hover:shadow-xl transition-all duration-200"
+          >
+            {/* Shuffle Button */}
             <button
-              onClick={togglePlay}
-              onMouseEnter={() => setIsHoveringInteractive(true)}
-              onMouseLeave={() => setIsHoveringInteractive(false)}
-              className="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
-              aria-label="Pause"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleShuffle();
+              }}
+              className={`w-8 h-8 flex items-center justify-center transition-opacity ${
+                isShuffled 
+                  ? 'text-gray-900 dark:text-white opacity-100' 
+                  : 'text-gray-400 dark:text-gray-500 hover:opacity-70'
+              }`}
+              aria-label="Shuffle"
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
               </svg>
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Overdrive</span>
+
+            {/* Previous Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                previousSong();
+              }}
+              className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
+              aria-label="Previous"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+              </svg>
+            </button>
+
+            {/* Play/Pause Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
+              className="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? (
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              )}
+            </button>
+
+            {/* Next Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextSong();
+              }}
+              className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
+              aria-label="Next"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+              </svg>
+            </button>
+
+            {/* Song Title */}
+            <div className="flex items-center gap-2 ml-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
+              </span>
             </div>
           </div>
         </div>
