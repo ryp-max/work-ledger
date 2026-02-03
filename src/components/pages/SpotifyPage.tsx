@@ -1,28 +1,15 @@
 'use client';
 
-import { useState, useRef } from 'react';
+interface SpotifyPageProps {
+  isPlaying: boolean;
+  onTogglePlay: () => void;
+}
 
-export function SpotifyPage() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-  
+export function SpotifyPage({ isPlaying, onTogglePlay }: SpotifyPageProps) {
   return (
     <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-900">
-      <audio ref={audioRef} src="/audio/overdrive.mp3" loop />
-      
       <button
-        onClick={togglePlay}
+        onClick={onTogglePlay}
         className="w-16 h-16 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >

@@ -43,6 +43,10 @@ export function ChromeBrowser() {
   const omniboxRef = useRef<HTMLInputElement>(null);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
+  
+  // Audio state - persists across tab switches
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Track mouse position for custom cursor
   useEffect(() => {
@@ -150,6 +154,40 @@ export function ChromeBrowser() {
   }, [addTab]);
 
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
+  const isSpotifyTab = activeTab.pageType === 'spotify';
+
+  // Audio control functions
+  const togglePlay = useCallback(() => {
+    if (!audioRef.current) return;
+    
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(err => {
+        console.error('Error playing audio:', err);
+      });
+    }
+  }, [isPlaying]);
+
+  // Initialize audio element
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/audio/overdrive.mp3');
+      audioRef.current.loop = true;
+      
+      audioRef.current.addEventListener('play', () => setIsPlaying(true));
+      audioRef.current.addEventListener('pause', () => setIsPlaying(false));
+      audioRef.current.addEventListener('ended', () => setIsPlaying(false));
+    }
+    
+    return () => {
+      // Cleanup on unmount
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const renderContent = () => {
     switch (activeTab.pageType) {
@@ -171,7 +209,7 @@ export function ChromeBrowser() {
       case 'chatgpt':
         return <ChatGPTPage />;
       case 'spotify':
-        return <SpotifyPage />;
+        return <SpotifyPage isPlaying={isPlaying} onTogglePlay={togglePlay} />;
       case 'url':
         return (
           <iframe
@@ -280,6 +318,28 @@ export function ChromeBrowser() {
           {renderContent()}
         </div>
       </div>
+
+      {/* Playback Bar - Shows when music is playing and not on Spotify tab */}
+      {isPlaying && !isSpotifyTab && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-full px-6 py-3 shadow-lg border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+            <button
+              onClick={togglePlay}
+              onMouseEnter={() => setIsHoveringInteractive(true)}
+              onMouseLeave={() => setIsHoveringInteractive(false)}
+              className="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
+              aria-label="Pause"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Overdrive</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
