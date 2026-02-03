@@ -537,20 +537,27 @@ export function ChromeBrowser() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
         {/* Window Chrome - Header Area */}
-        <div className="h-[48px] bg-[#E8F0FE] dark:bg-[#2D2D2D] border-b border-gray-300/30 dark:border-gray-700 flex items-end pb-0">
+        <div className="h-[48px] bg-[#E8F0FE] dark:bg-[#2D2D2D] border-b border-gray-300/30 dark:border-gray-700 flex items-end pb-0 relative z-10">
           {/* Traffic Lights */}
-          <div className="flex gap-1.5 ml-4 mr-4 mb-2">
+          <div className="flex gap-1.5 ml-4 mr-4 mb-2 items-center">
             <motion.button
-              onClick={() => setIsClosed(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsClosed(true);
+              }}
               onMouseEnter={() => setIsHoveringInteractive(true)}
               onMouseLeave={() => setIsHoveringInteractive(false)}
-              className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"
+              className="relative z-50 flex-shrink-0 p-1 -m-1"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            />
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              type="button"
+            >
+              <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"></div>
+            </motion.button>
+            <div className="w-3 h-3 rounded-full bg-yellow-500 flex-shrink-0"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></div>
           </div>
           
           {/* Tab Strip */}
