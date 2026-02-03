@@ -54,6 +54,12 @@ const MOCK_POSTS = [
   },
 ];
 
+// Helper function to extract week number from title
+function getWeekNumber(title: string): string {
+  const match = title.match(/Week (\d+)/);
+  return match ? match[1] : '';
+}
+
 // Helper function to format date
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -97,17 +103,23 @@ export function WeeklyLogPage() {
               }}
               className="group"
             >
-              {/* Date */}
-              <div className="mb-6">
-                <time className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+              {/* Title with Week # and Date */}
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50 mb-4 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
+                <span className="text-gray-600 dark:text-gray-400 font-normal">
+                  Week {getWeekNumber(post.title) || '?'}
+                </span>
+                <span className="mx-2 text-gray-400 dark:text-gray-600">·</span>
+                <time className="text-gray-600 dark:text-gray-400 font-normal">
                   {formatDate(post.date)}
                 </time>
-              </div>
-
-              {/* Title */}
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50 mb-4 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                {post.title}
               </h2>
+              
+              {/* Subtitle */}
+              {post.title.includes(':') && (
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 font-medium">
+                  {post.title.split(':').slice(1).join(':').trim()}
+                </p>
+              )}
 
               {/* Excerpt */}
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8 text-lg">
