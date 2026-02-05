@@ -701,7 +701,7 @@ export function ChromeBrowser() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <motion.div 
-              className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
+              className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 pr-6 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
               style={{ width: 'fit-content', maxWidth: '500px' }}
               onClick={goToSpotifyTab}
               whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
@@ -826,18 +826,69 @@ export function ChromeBrowser() {
 
                 {/* Song Title */}
                 <motion.div 
-                  className="flex items-center gap-3 ml-2 flex-1 min-w-0"
+                  className="flex items-center gap-3 ml-2 flex-1 min-w-0 relative"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 font-medium truncate">
-                      {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
+                  <div className="flex-1 min-w-0 overflow-hidden relative pr-2">
+                    {/* White gradient fade on the right */}
+                    <div 
+                      className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none dark:hidden"
+                      style={{
+                        background: 'linear-gradient(to right, transparent, white)'
+                      }}
+                    />
+                    <div 
+                      className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none hidden dark:block"
+                      style={{
+                        background: 'linear-gradient(to right, transparent, rgb(31, 41, 55))'
+                      }}
+                    />
+                    
+                    {/* Scrolling song title */}
+                    <div className="text-sm text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap overflow-hidden">
+                      <motion.div
+                        className="inline-block"
+                        animate={{
+                          x: [0, 0, -100, -100, 0, 0],
+                        }}
+                        transition={{
+                          duration: 15,
+                          repeat: Infinity,
+                          repeatDelay: 2,
+                          ease: "linear",
+                          times: [0, 0.1, 0.5, 0.6, 0.9, 1]
+                        }}
+                        style={{
+                          willChange: 'transform'
+                        }}
+                      >
+                        {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
+                      </motion.div>
                     </div>
+                    
+                    {/* Scrolling artist name */}
                     {PLAYLIST[currentSongIndex]?.artist && (
-                      <div className="text-xs text-gray-500 dark:text-gray-500 truncate">
-                        {PLAYLIST[currentSongIndex]?.artist}
+                      <div className="text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap overflow-hidden mt-0.5">
+                        <motion.div
+                          className="inline-block"
+                          animate={{
+                            x: [0, 0, -150, -150, 0, 0],
+                          }}
+                          transition={{
+                            duration: 18,
+                            repeat: Infinity,
+                            repeatDelay: 2,
+                            ease: "linear",
+                            times: [0, 0.1, 0.5, 0.6, 0.9, 1]
+                          }}
+                          style={{
+                            willChange: 'transform'
+                          }}
+                        >
+                          {PLAYLIST[currentSongIndex]?.artist}
+                        </motion.div>
                       </div>
                     )}
                   </div>
