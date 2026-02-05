@@ -846,19 +846,15 @@ export function ChromeBrowser() {
                       }}
                     />
                     
-                    {/* Scrolling song title */}
-                    <div className="text-sm text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap overflow-hidden relative">
-                      <div className="scroll-text">
-                        {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
-                      </div>
+                    {/* Song title */}
+                    <div className="text-sm text-gray-600 dark:text-gray-400 font-medium truncate">
+                      {PLAYLIST[currentSongIndex]?.title || 'Overdrive'}
                     </div>
                     
-                    {/* Scrolling artist name */}
+                    {/* Artist name */}
                     {PLAYLIST[currentSongIndex]?.artist && (
-                      <div className="text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap overflow-hidden mt-0.5 relative">
-                        <div className="scroll-text-long">
-                          {PLAYLIST[currentSongIndex]?.artist}
-                        </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500 truncate mt-0.5">
+                        {PLAYLIST[currentSongIndex]?.artist}
                       </div>
                     )}
                   </div>
