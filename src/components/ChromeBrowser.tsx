@@ -52,6 +52,8 @@ export function ChromeBrowser() {
     { id: 3, title: 'Take Care', artist: 'GUMMY (거미), Dynamicduo (다이나믹 듀오)', src: '/audio/Take Care.mp3' },
     { id: 4, title: 'We Are', artist: 'Woo, Loco, GRAY', src: '/audio/We Are.mp3' },
     { id: 5, title: 'Aperture', artist: 'Harry Styles', src: '/audio/Aperture.mp3' },
+    { id: 6, title: 'Magnetic', artist: 'ILLIT', src: '/audio/Magnetic.mp3' },
+    { id: 7, title: 'Internet Girl', artist: 'KATSEYE', src: '/audio/Internet Girl.mp3' },
   ];
 
   // Audio state - persists across tab switches
