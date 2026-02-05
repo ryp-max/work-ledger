@@ -1,6 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { extractDominantColor, isLightColor } from '@/lib/color-extractor';
 
 interface SpotifyPageProps {
   isPlaying: boolean;
@@ -33,8 +35,35 @@ export function SpotifyPage({
   progress,
   formatTime
 }: SpotifyPageProps) {
+  const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
+  const [isLightBg, setIsLightBg] = useState(true);
+
+  // Extract dominant color from album cover
+  useEffect(() => {
+    if (currentSong.albumCover) {
+      extractDominantColor(currentSong.albumCover)
+        .then((color) => {
+          setBackgroundColor(color);
+          setIsLightBg(isLightColor(color));
+        })
+        .catch((error) => {
+          console.error('Failed to extract color:', error);
+          setBackgroundColor('#ffffff');
+          setIsLightBg(true);
+        });
+    } else {
+      setBackgroundColor('#ffffff');
+      setIsLightBg(true);
+    }
+  }, [currentSong.albumCover, currentSong.id]);
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-8 px-8">
+    <motion.div 
+      className="w-full h-full flex flex-col items-center justify-center gap-8 px-8"
+      style={{ backgroundColor }}
+      animate={{ backgroundColor }}
+      transition={{ duration: 0.8, ease: 'easeInOut' }}
+    >
       {/* Album Cover */}
       {currentSong.albumCover && (
         <motion.div
@@ -66,8 +95,12 @@ export function SpotifyPage({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="text-3xl font-semibold text-gray-900 dark:text-white mb-1 uppercase tracking-wide" 
-          style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}
+          className="text-3xl font-semibold mb-1 uppercase tracking-wide" 
+          style={{ 
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', 
+            letterSpacing: '0.05em',
+            color: isLightBg ? '#1f2937' : '#ffffff'
+          }}
         >
           {currentSong.title}
         </motion.h2>
@@ -77,8 +110,12 @@ export function SpotifyPage({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
-            className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide" 
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}
+            className="text-sm uppercase tracking-wide" 
+            style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', 
+              letterSpacing: '0.05em',
+              color: isLightBg ? '#6b7280' : '#d1d5db'
+            }}
           >
             {currentSong.artist}
           </motion.p>
@@ -87,14 +124,21 @@ export function SpotifyPage({
 
       {/* Progress Bar */}
       <div className="w-full max-w-md">
-        <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
+        <div 
+          className="h-1.5 rounded-full overflow-hidden mb-2"
+          style={{ backgroundColor: isLightBg ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.2)' }}
+        >
           <motion.div 
             className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
             style={{ width: `${progress}%` }}
             transition={{ type: "spring", stiffness: 200, damping: 25 }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}>
+        <div className="flex justify-between text-xs uppercase tracking-wide" style={{ 
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', 
+          letterSpacing: '0.05em',
+          color: isLightBg ? '#6b7280' : '#d1d5db'
+        }}>
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
@@ -105,11 +149,13 @@ export function SpotifyPage({
         {/* Shuffle Button */}
         <motion.button
           onClick={onToggleShuffle}
-          className={`w-10 h-10 flex items-center justify-center ${
-            isShuffled 
-              ? 'text-gray-900 dark:text-white opacity-100' 
-              : 'text-gray-400 dark:text-gray-500'
-          }`}
+          className="w-10 h-10 flex items-center justify-center"
+          style={{ 
+            color: isShuffled 
+              ? (isLightBg ? '#1f2937' : '#ffffff')
+              : (isLightBg ? '#9ca3af' : '#6b7280'),
+            opacity: isShuffled ? 1 : 0.6
+          }}
           whileHover={{ scale: 1.15, rotate: 180 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -123,7 +169,8 @@ export function SpotifyPage({
         {/* Previous Button */}
         <motion.button
           onClick={onPrevious}
-          className="w-12 h-12 flex items-center justify-center text-gray-900 dark:text-white"
+          className="w-12 h-12 flex items-center justify-center"
+          style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
           whileHover={{ scale: 1.15, x: -3 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -137,7 +184,8 @@ export function SpotifyPage({
         {/* Play/Pause Button - Centered */}
         <motion.button
           onClick={onTogglePlay}
-          className="w-20 h-20 flex items-center justify-center text-gray-900 dark:text-white"
+          className="w-20 h-20 flex items-center justify-center"
+          style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -157,7 +205,8 @@ export function SpotifyPage({
         {/* Next Button */}
         <motion.button
           onClick={onNext}
-          className="w-12 h-12 flex items-center justify-center text-gray-900 dark:text-white"
+          className="w-12 h-12 flex items-center justify-center"
+          style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
           whileHover={{ scale: 1.15, x: 3 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -171,11 +220,13 @@ export function SpotifyPage({
         {/* Repeat Button */}
         <motion.button
           onClick={onToggleRepeat}
-          className={`w-10 h-10 flex items-center justify-center ${
-            isRepeating 
-              ? 'text-gray-900 dark:text-white opacity-100' 
-              : 'text-gray-400 dark:text-gray-500'
-          }`}
+          className="w-10 h-10 flex items-center justify-center"
+          style={{ 
+            color: isRepeating 
+              ? (isLightBg ? '#1f2937' : '#ffffff')
+              : (isLightBg ? '#9ca3af' : '#6b7280'),
+            opacity: isRepeating ? 1 : 0.6
+          }}
           whileHover={{ scale: 1.15 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -186,6 +237,6 @@ export function SpotifyPage({
           </svg>
         </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
