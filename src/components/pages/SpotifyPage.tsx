@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { extractDominantColor, isLightColor } from '@/lib/color-extractor';
+import { extractDominantColor, isLightColor, invertColor } from '@/lib/color-extractor';
 
 interface SpotifyPageProps {
   isPlaying: boolean;
@@ -41,21 +41,27 @@ export function SpotifyPage({
   // Extract dominant color from album cover
   useEffect(() => {
     if (currentSong.albumCover) {
-      extractDominantColor(currentSong.albumCover)
-        .then((color) => {
-          setBackgroundColor(color);
-          setIsLightBg(isLightColor(color));
-        })
-        .catch((error) => {
-          console.error('Failed to extract color:', error);
-          setBackgroundColor('#ffffff');
-          setIsLightBg(true);
-        });
+      // Add a small delay to ensure image is loaded
+      const timer = setTimeout(() => {
+        extractDominantColor(currentSong.albumCover!)
+          .then((color) => {
+            console.log('Extracted color:', color, 'for song:', currentSong.title);
+            setBackgroundColor(color);
+            setIsLightBg(isLightColor(color));
+          })
+          .catch((error) => {
+            console.error('Failed to extract color:', error);
+            setBackgroundColor('#ffffff');
+            setIsLightBg(true);
+          });
+      }, 100);
+      
+      return () => clearTimeout(timer);
     } else {
       setBackgroundColor('#ffffff');
       setIsLightBg(true);
     }
-  }, [currentSong.albumCover, currentSong.id]);
+  }, [currentSong.albumCover, currentSong.id, currentSong.title]);
 
   return (
     <motion.div 
@@ -129,8 +135,11 @@ export function SpotifyPage({
           style={{ backgroundColor: isLightBg ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.2)' }}
         >
           <motion.div 
-            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full"
+            style={{ 
+              width: `${progress}%`,
+              backgroundColor: invertColor(backgroundColor)
+            }}
             transition={{ type: "spring", stiffness: 200, damping: 25 }}
           />
         </div>

@@ -6,12 +6,16 @@
 export async function extractDominantColor(imageUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    
+    // Only set crossOrigin for external URLs
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      img.crossOrigin = 'anonymous';
+    }
     
     img.onload = () => {
       try {
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         
         if (!ctx) {
           reject(new Error('Could not get canvas context'));
@@ -52,7 +56,7 @@ export async function extractDominantColor(imageUrl: string): Promise<string> {
         
         // Find the most common color
         let maxCount = 0;
-        let dominantColor = '000000';
+        let dominantColor = '#000000';
         
         for (const [colorKey, count] of colorMap.entries()) {
           if (count > maxCount) {
@@ -62,16 +66,24 @@ export async function extractDominantColor(imageUrl: string): Promise<string> {
           }
         }
         
+        // Ensure we have a valid color
+        if (dominantColor === '#000000' && colorMap.size === 0) {
+          dominantColor = '#ffffff';
+        }
+        
         resolve(dominantColor);
       } catch (error) {
+        console.error('Error extracting color:', error);
         reject(error);
       }
     };
     
-    img.onerror = () => {
-      reject(new Error('Failed to load image'));
+    img.onerror = (error) => {
+      console.error('Failed to load image:', imageUrl, error);
+      reject(new Error(`Failed to load image: ${imageUrl}`));
     };
     
+    // Set src after setting up handlers
     img.src = imageUrl;
   });
 }
@@ -106,4 +118,27 @@ export function isLightColor(hex: string): boolean {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   
   return luminance > 0.5;
+}
+
+/**
+ * Inverts a hex color (calculates the inverse/complementary color)
+ * @param hex - Hex color code
+ * @returns Inverted hex color code
+ */
+export function invertColor(hex: string): string {
+  // Remove # if present
+  const color = hex.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 4), 16);
+  const b = parseInt(color.substring(4, 6), 16);
+  
+  // Invert each component
+  const invertedR = 255 - r;
+  const invertedG = 255 - g;
+  const invertedB = 255 - b;
+  
+  // Convert back to hex
+  return rgbToHex(invertedR, invertedG, invertedB);
 }
