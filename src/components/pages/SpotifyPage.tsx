@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { extractDominantColor, isLightColor, invertColor } from '@/lib/color-extractor';
+import { extractDominantColor, isLightColor, invertColor, hexToRgba } from '@/lib/color-extractor';
 
 interface SpotifyPageProps {
   isPlaying: boolean;
@@ -156,95 +156,150 @@ export function SpotifyPage({
       {/* Controls */}
       <div className="flex items-center justify-center gap-6">
         {/* Shuffle Button */}
-        <motion.button
-          onClick={onToggleShuffle}
-          className="w-10 h-10 flex items-center justify-center"
+        <motion.div
+          className="rounded-full flex items-center justify-center"
           style={{ 
-            color: isShuffled 
-              ? (isLightBg ? '#1f2937' : '#ffffff')
-              : (isLightBg ? '#9ca3af' : '#6b7280'),
-            opacity: isShuffled ? 1 : 0.6
+            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            width: '3rem',
+            height: '3rem'
           }}
-          whileHover={{ scale: 1.15, rotate: 180 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          aria-label="Shuffle"
         >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
-          </svg>
-        </motion.button>
+          <motion.button
+            onClick={onToggleShuffle}
+            className="w-10 h-10 flex items-center justify-center rounded-full"
+            style={{ 
+              color: isShuffled 
+                ? (isLightBg ? '#1f2937' : '#ffffff')
+                : (isLightBg ? '#9ca3af' : '#6b7280'),
+              opacity: isShuffled ? 1 : 0.6
+            }}
+            whileHover={{ scale: 1.15, rotate: 180 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            aria-label="Shuffle"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
+            </svg>
+          </motion.button>
+        </motion.div>
 
         {/* Previous Button */}
-        <motion.button
-          onClick={onPrevious}
-          className="w-12 h-12 flex items-center justify-center"
-          style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
-          whileHover={{ scale: 1.15, x: -3 }}
-          whileTap={{ scale: 0.9 }}
+        <motion.div
+          className="rounded-full flex items-center justify-center"
+          style={{ 
+            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            width: '3.5rem',
+            height: '3.5rem'
+          }}
+          whileHover={{ scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          aria-label="Previous"
         >
-          <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-          </svg>
-        </motion.button>
+          <motion.button
+            onClick={onPrevious}
+            className="w-12 h-12 flex items-center justify-center rounded-full"
+            style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
+            whileHover={{ scale: 1.15, x: -3 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            aria-label="Previous"
+          >
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </motion.button>
+        </motion.div>
 
         {/* Play/Pause Button - Centered */}
-        <motion.button
-          onClick={onTogglePlay}
-          className="w-20 h-20 flex items-center justify-center"
-          style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
-          whileHover={{ scale: 1.2 }}
-          whileTap={{ scale: 0.9 }}
+        <motion.div
+          className="rounded-full flex items-center justify-center"
+          style={{ 
+            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            width: '5.5rem',
+            height: '5.5rem'
+          }}
+          whileHover={{ scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
         >
-          {isPlaying ? (
-            <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-            </svg>
-          ) : (
-            <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          )}
-        </motion.button>
+          <motion.button
+            onClick={onTogglePlay}
+            className="w-20 h-20 flex items-center justify-center rounded-full"
+            style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+            ) : (
+              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
+          </motion.button>
+        </motion.div>
 
         {/* Next Button */}
-        <motion.button
-          onClick={onNext}
-          className="w-12 h-12 flex items-center justify-center"
-          style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
-          whileHover={{ scale: 1.15, x: 3 }}
-          whileTap={{ scale: 0.9 }}
+        <motion.div
+          className="rounded-full flex items-center justify-center"
+          style={{ 
+            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            width: '3.5rem',
+            height: '3.5rem'
+          }}
+          whileHover={{ scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          aria-label="Next"
         >
-          <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-          </svg>
-        </motion.button>
+          <motion.button
+            onClick={onNext}
+            className="w-12 h-12 flex items-center justify-center rounded-full"
+            style={{ color: isLightBg ? '#1f2937' : '#ffffff' }}
+            whileHover={{ scale: 1.15, x: 3 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            aria-label="Next"
+          >
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </motion.button>
+        </motion.div>
 
         {/* Repeat Button */}
-        <motion.button
-          onClick={onToggleRepeat}
-          className="w-10 h-10 flex items-center justify-center"
+        <motion.div
+          className="rounded-full flex items-center justify-center"
           style={{ 
-            color: isRepeating 
-              ? (isLightBg ? '#1f2937' : '#ffffff')
-              : (isLightBg ? '#9ca3af' : '#6b7280'),
-            opacity: isRepeating ? 1 : 0.6
+            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            width: '3rem',
+            height: '3rem'
           }}
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          aria-label="Repeat"
         >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v6z"/>
-          </svg>
-        </motion.button>
+          <motion.button
+            onClick={onToggleRepeat}
+            className="w-10 h-10 flex items-center justify-center rounded-full"
+            style={{ 
+              color: isRepeating 
+                ? (isLightBg ? '#1f2937' : '#ffffff')
+                : (isLightBg ? '#9ca3af' : '#6b7280'),
+              opacity: isRepeating ? 1 : 0.6
+            }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            aria-label="Repeat"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v6z"/>
+            </svg>
+          </motion.button>
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -142,3 +142,21 @@ export function invertColor(hex: string): string {
   // Convert back to hex
   return rgbToHex(invertedR, invertedG, invertedB);
 }
+
+/**
+ * Converts hex color to rgba string with specified opacity
+ * @param hex - Hex color code
+ * @param opacity - Opacity value between 0 and 1
+ * @returns rgba color string
+ */
+export function hexToRgba(hex: string, opacity: number): string {
+  // Remove # if present
+  const color = hex.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 4), 16);
+  const b = parseInt(color.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
