@@ -176,8 +176,8 @@ export function SpotifyPage({
             style={{ 
               color: isShuffled 
                 ? (isLightBg ? '#1f2937' : '#ffffff')
-                : (isLightBg ? '#9ca3af' : '#6b7280'),
-              opacity: isShuffled ? 1 : 0.6
+                : 'rgba(255, 255, 255, 0.5)',
+              opacity: isShuffled ? 1 : 1
             }}
             whileHover={{ scale: 1.15, rotate: 180 }}
             whileTap={{ scale: 0.9 }}
@@ -291,8 +291,8 @@ export function SpotifyPage({
             style={{ 
               color: isRepeating 
                 ? (isLightBg ? '#1f2937' : '#ffffff')
-                : (isLightBg ? '#9ca3af' : '#6b7280'),
-              opacity: isRepeating ? 1 : 0.6
+                : 'rgba(255, 255, 255, 0.5)',
+              opacity: isRepeating ? 1 : 1
             }}
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}
