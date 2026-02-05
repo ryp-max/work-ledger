@@ -37,6 +37,7 @@ export function SpotifyPage({
 }: SpotifyPageProps) {
   const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
   const [isLightBg, setIsLightBg] = useState(true);
+  const [inverseColor, setInverseColor] = useState<string>('#000000');
 
   // Extract dominant color from album cover
   useEffect(() => {
@@ -48,11 +49,13 @@ export function SpotifyPage({
             console.log('Extracted color:', color, 'for song:', currentSong.title);
             setBackgroundColor(color);
             setIsLightBg(isLightColor(color));
+            setInverseColor(invertColor(color));
           })
           .catch((error) => {
             console.error('Failed to extract color:', error);
             setBackgroundColor('#ffffff');
             setIsLightBg(true);
+            setInverseColor('#000000');
           });
       }, 100);
       
@@ -60,6 +63,7 @@ export function SpotifyPage({
     } else {
       setBackgroundColor('#ffffff');
       setIsLightBg(true);
+      setInverseColor('#000000');
     }
   }, [currentSong.albumCover, currentSong.id, currentSong.title]);
 
@@ -138,7 +142,7 @@ export function SpotifyPage({
             className="h-full rounded-full"
             style={{ 
               width: `${progress}%`,
-              backgroundColor: invertColor(backgroundColor)
+              backgroundColor: inverseColor
             }}
             transition={{ type: "spring", stiffness: 200, damping: 25 }}
           />
@@ -159,7 +163,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.3),
             width: '3rem',
             height: '3rem'
           }}
@@ -190,7 +194,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.3),
             width: '3.5rem',
             height: '3.5rem'
           }}
@@ -216,7 +220,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.3),
             width: '5.5rem',
             height: '5.5rem'
           }}
@@ -248,7 +252,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.3),
             width: '3.5rem',
             height: '3.5rem'
           }}
@@ -274,7 +278,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(invertColor(backgroundColor), 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.3),
             width: '3rem',
             height: '3rem'
           }}

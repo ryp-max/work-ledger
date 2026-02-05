@@ -229,8 +229,10 @@ export function ChromeBrowser() {
     if (!audioRef.current) return;
     
     if (isPlaying) {
+      // Pause at current position - don't reset
       audioRef.current.pause();
     } else {
+      // Resume from current position - don't reload
       audioRef.current.play().catch(err => {
         console.error('Error playing audio:', err);
       });
