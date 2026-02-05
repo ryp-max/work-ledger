@@ -160,3 +160,40 @@ body {
 .shadow-2xl {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* Scrolling text animation - loops properly */
+@keyframes scrollText {
+  0%, 25% {
+    transform: translateX(0);
+  }
+  50%, 75% {
+    transform: translateX(-200px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scrollTextLong {
+  0%, 25% {
+    transform: translateX(0);
+  }
+  50%, 75% {
+    transform: translateX(-300px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.scroll-text {
+  animation: scrollText 15s infinite linear;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.scroll-text-long {
+  animation: scrollTextLong 18s infinite linear;
+  display: inline-block;
+  white-space: nowrap;
+}
