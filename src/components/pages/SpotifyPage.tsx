@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 interface SpotifyPageProps {
   isPlaying: boolean;
   onTogglePlay: () => void;
-  currentSong: { id: number; title: string; src: string; artist?: string };
+  currentSong: { id: number; title: string; src: string; artist?: string; albumCover?: string };
   onNext: () => void;
   onPrevious: () => void;
   isShuffled: boolean;
@@ -35,15 +35,53 @@ export function SpotifyPage({
 }: SpotifyPageProps) {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-8 px-8">
+      {/* Album Cover */}
+      {currentSong.albumCover && (
+        <motion.div
+          key={currentSong.id}
+          initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ 
+            type: "spring",
+            stiffness: 200,
+            damping: 20,
+            duration: 0.6
+          }}
+          className="w-64 h-64 rounded-lg overflow-hidden shadow-2xl"
+          whileHover={{ scale: 1.05 }}
+        >
+          <img
+            src={currentSong.albumCover}
+            alt={`${currentSong.title} album cover`}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </motion.div>
+      )}
+
       {/* Song Title */}
       <div className="text-center">
-        <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1 uppercase tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}>
+        <motion.h2 
+          key={`title-${currentSong.id}`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="text-3xl font-semibold text-gray-900 dark:text-white mb-1 uppercase tracking-wide" 
+          style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}
+        >
           {currentSong.title}
-        </h2>
+        </motion.h2>
         {currentSong.artist && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}>
+          <motion.p 
+            key={`artist-${currentSong.id}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide" 
+            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '0.05em' }}
+          >
             {currentSong.artist}
-          </p>
+          </motion.p>
         )}
       </div>
 
