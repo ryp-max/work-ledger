@@ -163,7 +163,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(inverseColor, 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.2),
             width: '3rem',
             height: '3rem'
           }}
@@ -194,7 +194,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(inverseColor, 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.2),
             width: '3.5rem',
             height: '3.5rem'
           }}
@@ -220,7 +220,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(inverseColor, 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.2),
             width: '5.5rem',
             height: '5.5rem'
           }}
@@ -252,7 +252,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(inverseColor, 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.2),
             width: '3.5rem',
             height: '3.5rem'
           }}
@@ -278,7 +278,7 @@ export function SpotifyPage({
         <motion.div
           className="rounded-full flex items-center justify-center"
           style={{ 
-            backgroundColor: hexToRgba(inverseColor, 0.3),
+            backgroundColor: hexToRgba(inverseColor, 0.2),
             width: '3rem',
             height: '3rem'
           }}
