@@ -66,6 +66,7 @@ export function ChromeBrowser() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const shouldAutoPlayRef = useRef(false);
 
   // Shuffle array function (Fisher-Yates algorithm)
   const shuffleArray = useCallback((array: number[]): number[] => {
@@ -373,9 +374,11 @@ export function ChromeBrowser() {
       
       if (isRepeating) {
         // If repeating, play the same song again
+        shouldAutoPlayRef.current = true;
         playSong(currentSongIndex);
       } else {
         // Auto-play next song when current ends
+        shouldAutoPlayRef.current = true;
         if (isShuffled && shuffledOrder.length > 0) {
           let nextShuffleIndex = shuffleIndex + 1;
           if (nextShuffleIndex >= shuffledOrder.length) {
@@ -406,7 +409,7 @@ export function ChromeBrowser() {
   useEffect(() => {
     if (!audioRef.current) return;
     
-    const wasPlaying = isPlaying;
+    const wasPlaying = isPlaying || shouldAutoPlayRef.current;
     const currentSrc = audioRef.current.src.replace(window.location.origin, '');
     const newSrc = PLAYLIST[currentSongIndex].src;
     
@@ -416,8 +419,11 @@ export function ChromeBrowser() {
       audioRef.current.load();
       setCurrentTime(0);
       if (wasPlaying) {
+        setIsPlaying(true);
+        shouldAutoPlayRef.current = false;
         audioRef.current.play().catch(err => {
           console.error('Error playing audio:', err);
+          setIsPlaying(false);
         });
       }
     }
