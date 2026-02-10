@@ -65,6 +65,7 @@ export function ChromeBrowser() {
   const [shuffleIndex, setShuffleIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const shouldAutoPlayRef = useRef(false);
 
@@ -324,6 +325,7 @@ export function ChromeBrowser() {
     if (!audioRef.current) {
       audioRef.current = new Audio(PLAYLIST[currentSongIndex].src);
       audioRef.current.loop = false; // Don't loop individual songs, handle playlist looping
+      audioRef.current.volume = volume;
       
       audioRef.current.addEventListener('play', () => setIsPlaying(true));
       audioRef.current.addEventListener('pause', () => setIsPlaying(false));
@@ -337,6 +339,13 @@ export function ChromeBrowser() {
       }
     };
   }, []);
+
+  // Sync volume with audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   // Track audio progress
   useEffect(() => {
@@ -823,6 +832,54 @@ export function ChromeBrowser() {
                     <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v6z"/>
                   </svg>
                 </motion.button>
+
+                {/* Volume Control */}
+                <div 
+                  className="flex items-center gap-2 ml-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setVolume(volume === 0 ? 1 : 0);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    aria-label={volume === 0 ? 'Unmute' : 'Mute'}
+                  >
+                    {volume === 0 ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                      </svg>
+                    ) : volume < 0.5 ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.83 16h-1.41l-1.47-1.47c1.18-.84 1.96-2.18 1.96-3.75 0-2.62-2.01-4.78-4.64-5.07V3c0-.28-.22-.5-.5-.5s-.5.22-.5.5v1.21c-.5.1-.97.28-1.4.52L5.52 3.16c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41L18.83 16zm-2.83-6c0 1.1-.9 2-2 2h-.5l-2-2H16c1.1 0 2 .9 2 2zM3 9v6h4l5 5V4L7 9H3z"/>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                      </svg>
+                    )}
+                  </motion.button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={(e) => {
+                      setVolume(parseFloat(e.target.value));
+                    }}
+                    className="w-20 h-1 rounded-full appearance-none cursor-pointer volume-slider bg-gray-200 dark:bg-gray-700"
+                    style={{
+                      background: darkMode 
+                        ? `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, rgb(75, 85, 99) ${volume * 100}%, rgb(75, 85, 99) 100%)`
+                        : `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, rgb(229, 231, 235) ${volume * 100}%, rgb(229, 231, 235) 100%)`
+                    }}
+                  />
+                </div>
 
                 {/* Song Title */}
                 <motion.div 
