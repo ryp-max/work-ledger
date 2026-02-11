@@ -161,6 +161,16 @@ body {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Reduced motion support */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 /* Volume slider styling */
 .volume-slider::-webkit-slider-thumb {
   appearance: none;

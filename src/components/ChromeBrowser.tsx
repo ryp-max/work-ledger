@@ -33,8 +33,27 @@ export const BOOKMARKS = [
 ];
 
 export function ChromeBrowser() {
-  const [tabs, setTabs] = useState<Tab[]>(DEFAULT_TABS);
-  const [activeTabId, setActiveTabId] = useState<string>('1');
+  // Load tabs from localStorage or use defaults
+  const [tabs, setTabs] = useState<Tab[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('workLedgerTabs');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return DEFAULT_TABS;
+        }
+      }
+    }
+    return DEFAULT_TABS;
+  });
+  const [activeTabId, setActiveTabId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('workLedgerActiveTab');
+      return saved || '1';
+    }
+    return '1';
+  });
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -43,6 +62,22 @@ export function ChromeBrowser() {
     return false;
   });
   const [isClosed, setIsClosed] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('reducedMotion');
+      return saved ? JSON.parse(saved) : window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
+  const [audioEnabled, setAudioEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('audioEnabled');
+      return saved ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
   const omniboxRef = useRef<HTMLInputElement>(null);
   
   // Playlist
@@ -108,6 +143,116 @@ export function ChromeBrowser() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
+  // Keyboard shortcuts will be set up after addTab is defined
+
+  // Get favicon for page type
+  const getFavicon = useCallback((pageType: PageType, url?: string) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      try {
+        const domain = new URL(url).hostname;
+        return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+      } catch {
+        return undefined;
+      }
+    }
+    
+    // Default favicons for internal pages
+    const favicons: Record<PageType, string> = {
+      'newtab': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+      'spotify': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.84-.179-.84-.66 0-.36.24-.66.54-.779 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
+      'games': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M15.5 12c0 1.38-1.12 2.5-2.5 2.5s-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5zm-2.5-8c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S18.02 4 13 4zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
+      'weekly-log': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>',
+      'photos': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+      'guestbook': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>',
+      'url': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
+    };
+    return favicons[pageType];
+  }, []);
+
+  const addTab = useCallback((pageType: PageType = 'newtab', url?: string, title?: string) => {
+    // If trying to add Spotify tab, check if one already exists
+    if (pageType === 'spotify') {
+      const existingSpotifyTab = tabs.find(t => t.pageType === 'spotify');
+      if (existingSpotifyTab) {
+        setActiveTabId(existingSpotifyTab.id);
+        return;
+      }
+    }
+    
+    const newTab: Tab = {
+      id: Date.now().toString(),
+      title: title || 'New Tab',
+      pageType,
+      url: url || `chrome://${pageType}`,
+      favicon: getFavicon(pageType, url),
+    };
+    setTabs(prev => [...prev, newTab]);
+    setActiveTabId(newTab.id);
+  }, [tabs, getFavicon]);
+
+  // Persist tabs to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('workLedgerTabs', JSON.stringify(tabs));
+    }
+  }, [tabs]);
+
+  // Persist active tab to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('workLedgerActiveTab', activeTabId);
+    }
+  }, [activeTabId]);
+
+  const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Prevent closing the last tab
+    if (tabs.length <= 1) return;
+    
+    setTabs(prev => {
+      const filtered = prev.filter(t => t.id !== tabId);
+      // If we closed the active tab, switch to the last remaining tab
+      if (tabId === activeTabId && filtered.length > 0) {
+        setActiveTabId(filtered[filtered.length - 1].id);
+      }
+      return filtered;
+    });
+  }, [activeTabId, tabs.length]);
+
+  const switchTab = useCallback((tabId: string) => {
+    setActiveTabId(tabId);
+  }, []);
+
+  const handleOmniboxSubmit = useCallback((value: string) => {
+    const input = value.trim().toLowerCase();
+    
+    if (input.includes('game') || input.includes('2048') || input.includes('wordle') || input === '') {
+      addTab('games', 'chrome://games', 'Games');
+      return;
+    }
+    
+    if (input.startsWith('http://') || input.startsWith('https://') || 
+        (input.includes('.') && !input.includes(' '))) {
+      const url = input.startsWith('http') ? input : `https://${input}`;
+      addTab('url', url, new URL(url).hostname);
+      return;
+    }
+    
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(value)}`;
+    addTab('url', searchUrl, 'Google Search');
+  }, [addTab]);
+
+  const handleBookmarkClick = useCallback((bookmark: typeof BOOKMARKS[0]) => {
+    if (bookmark.url.startsWith('chrome://')) {
+      const pageType = bookmark.url.replace('chrome://', '') as PageType;
+      addTab(pageType, bookmark.url, bookmark.title);
+    } else if (bookmark.id === 'spotify') {
+      addTab('spotify', bookmark.url, bookmark.title);
+    } else {
+      addTab('url', bookmark.url, bookmark.title);
+    }
+  }, [addTab]);
+
   // Keyboard shortcuts: ⌘L focuses omnibox, ⌘1-5 switches tabs, ⌘W closes active tab, ⌘T opens new tab
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -170,100 +315,6 @@ export function ChromeBrowser() {
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [tabs, activeTabId, addTab]);
-
-  // Get favicon for page type
-  const getFavicon = useCallback((pageType: PageType, url?: string) => {
-    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-      try {
-        const domain = new URL(url).hostname;
-        return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
-      } catch {
-        return undefined;
-      }
-    }
-    
-    // Default favicons for internal pages
-    const favicons: Record<PageType, string> = {
-      'newtab': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
-      'spotify': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.84-.179-.84-.66 0-.36.24-.66.54-.779 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
-      'games': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M15.5 12c0 1.38-1.12 2.5-2.5 2.5s-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5zm-2.5-8c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S18.02 4 13 4zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
-      'weekly-log': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>',
-      'photos': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
-      'guestbook': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>',
-      'url': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
-    };
-    return favicons[pageType];
-  }, []);
-
-  const addTab = useCallback((pageType: PageType = 'newtab', url?: string, title?: string) => {
-    // If trying to add Spotify tab, check if one already exists
-    if (pageType === 'spotify') {
-      const existingSpotifyTab = tabs.find(t => t.pageType === 'spotify');
-      if (existingSpotifyTab) {
-        setActiveTabId(existingSpotifyTab.id);
-        return;
-      }
-    }
-    
-    const newTab: Tab = {
-      id: Date.now().toString(),
-      title: title || 'New Tab',
-      pageType,
-      url: url || `chrome://${pageType}`,
-      favicon: getFavicon(pageType, url),
-    };
-    setTabs(prev => [...prev, newTab]);
-    setActiveTabId(newTab.id);
-  }, [tabs, getFavicon]);
-
-  const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Prevent closing the last tab
-    if (tabs.length <= 1) return;
-    
-    setTabs(prev => {
-      const filtered = prev.filter(t => t.id !== tabId);
-      // If we closed the active tab, switch to the last remaining tab
-      if (tabId === activeTabId && filtered.length > 0) {
-        setActiveTabId(filtered[filtered.length - 1].id);
-      }
-      return filtered;
-    });
-  }, [activeTabId, tabs.length]);
-
-  const switchTab = useCallback((tabId: string) => {
-    setActiveTabId(tabId);
-  }, []);
-
-  const handleOmniboxSubmit = useCallback((value: string) => {
-    const input = value.trim().toLowerCase();
-    
-    if (input.includes('game') || input.includes('2048') || input.includes('wordle') || input === '') {
-      addTab('games', 'chrome://games', 'Games');
-      return;
-    }
-    
-    if (input.startsWith('http://') || input.startsWith('https://') || 
-        (input.includes('.') && !input.includes(' '))) {
-      const url = input.startsWith('http') ? input : `https://${input}`;
-      addTab('url', url, new URL(url).hostname);
-      return;
-    }
-    
-    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(value)}`;
-    addTab('url', searchUrl, 'Google Search');
-  }, [addTab]);
-
-  const handleBookmarkClick = useCallback((bookmark: typeof BOOKMARKS[0]) => {
-    if (bookmark.url.startsWith('chrome://')) {
-      const pageType = bookmark.url.replace('chrome://', '') as PageType;
-      addTab(pageType, bookmark.url, bookmark.title);
-    } else if (bookmark.id === 'spotify') {
-      addTab('spotify', bookmark.url, bookmark.title);
-    } else {
-      addTab('url', bookmark.url, bookmark.title);
-    }
-  }, [addTab]);
 
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
   const isSpotifyTab = activeTab.pageType === 'spotify';
@@ -541,8 +592,32 @@ export function ChromeBrowser() {
   };
 
 
+  // Save preferences to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('reducedMotion', JSON.stringify(reducedMotion));
+    }
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('audioEnabled', JSON.stringify(audioEnabled));
+    }
+  }, [audioEnabled]);
+
+  // Apply reduced motion class
+  useEffect(() => {
+    if (reducedMotion) {
+      document.documentElement.classList.add('reduce-motion');
+    } else {
+      document.documentElement.classList.remove('reduce-motion');
+    }
+  }, [reducedMotion]);
+
   // Global click handler for keyboard sound
   useEffect(() => {
+    if (!audioEnabled) return;
+    
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       
@@ -568,10 +643,31 @@ export function ChromeBrowser() {
 
     document.addEventListener('click', handleClick, true);
     return () => document.removeEventListener('click', handleClick, true);
-  }, []);
+  }, [audioEnabled]);
 
   return (
     <div className="w-full h-screen bg-[#EEF0F3] dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+      {/* Minimized Indicator */}
+      <AnimatePresence>
+        {isMinimized && !isClosed && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50"
+          >
+            <motion.button
+              onClick={() => setIsMinimized(false)}
+              className="px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Restore Window
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Chrome Icon - Shown when browser is closed */}
       <AnimatePresence>
         {isClosed && (
@@ -599,37 +695,80 @@ export function ChromeBrowser() {
         )}
       </AnimatePresence>
 
-      {/* Dark Mode Toggle - Top Right */}
-      <motion.button
-        onClick={() => setDarkMode(!darkMode)}
-        className="fixed top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center"
-        whileHover={{ scale: 1.1, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        {darkMode ? (
-          <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      {/* Settings Toggles - Top Right */}
+      <div className="fixed top-6 right-6 z-50 flex gap-2">
+        {/* Reduced Motion Toggle */}
+        <motion.button
+          onClick={() => setReducedMotion(!reducedMotion)}
+          className="w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center"
+          whileHover={{ scale: 1.1, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          title={reducedMotion ? 'Enable animations' : 'Reduce motion'}
+        >
+          <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
           </svg>
-        ) : (
-          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-          </svg>
-        )}
-      </motion.button>
+        </motion.button>
+        
+        {/* Audio Toggle */}
+        <motion.button
+          onClick={() => setAudioEnabled(!audioEnabled)}
+          className="w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center"
+          whileHover={{ scale: 1.1, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          title={audioEnabled ? 'Disable sounds' : 'Enable sounds'}
+        >
+          {audioEnabled ? (
+            <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+          )}
+        </motion.button>
+        
+        {/* Dark Mode Toggle */}
+        <motion.button
+          onClick={() => setDarkMode(!darkMode)}
+          className="w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center"
+          whileHover={{ scale: 1.1, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {darkMode ? (
+            <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </motion.button>
+      </div>
 
       {/* Browser Window */}
       <AnimatePresence>
-        {!isClosed && (
+        {!isClosed && !isMinimized && (
           <motion.div 
-            className="bg-[#FAFAFB] dark:bg-gray-800 rounded-[20px] flex flex-col overflow-hidden shadow-2xl"
+            className="bg-[#FAFAFB] dark:bg-gray-800 flex flex-col overflow-hidden shadow-2xl"
             style={{
-              width: 'min(1280px, 92vw)',
-              height: 'min(760px, 86vh)',
+              width: isFullscreen ? '100vw' : 'min(1280px, 92vw)',
+              height: isFullscreen ? '100vh' : 'min(760px, 86vh)',
+              borderRadius: isFullscreen ? '0' : '20px',
             }}
             initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{ 
+              scale: 1, 
+              opacity: 1,
+              borderRadius: isFullscreen ? 0 : 20,
+            }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
@@ -637,10 +776,12 @@ export function ChromeBrowser() {
         <div className="h-[48px] bg-[#E8F0FE] dark:bg-[#2D2D2D] border-b border-gray-300/30 dark:border-gray-700 flex items-end pb-0 relative z-10">
           {/* Traffic Lights */}
           <div className="flex gap-1.5 mb-2 items-center" style={{ marginLeft: '8px', marginRight: '8px' }}>
+            {/* Red - Close */}
             <motion.button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                playKeyboardClick();
                 setIsClosed(true);
               }}
               className="relative z-50 flex-shrink-0 p-1 -m-1"
@@ -648,11 +789,44 @@ export function ChromeBrowser() {
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
               type="button"
+              title="Close window"
             >
               <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"></div>
             </motion.button>
-            <div className="w-3 h-3 rounded-full bg-yellow-500 flex-shrink-0"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></div>
+            {/* Yellow - Minimize */}
+            <motion.button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                playKeyboardClick();
+                setIsMinimized(!isMinimized);
+              }}
+              className="relative z-50 flex-shrink-0 p-1 -m-1"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              type="button"
+              title="Minimize window"
+            >
+              <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors cursor-pointer"></div>
+            </motion.button>
+            {/* Green - Fullscreen */}
+            <motion.button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                playKeyboardClick();
+                setIsFullscreen(!isFullscreen);
+              }}
+              className="relative z-50 flex-shrink-0 p-1 -m-1"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              type="button"
+              title="Toggle fullscreen"
+            >
+              <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors cursor-pointer"></div>
+            </motion.button>
           </div>
           
           {/* Tab Strip */}
