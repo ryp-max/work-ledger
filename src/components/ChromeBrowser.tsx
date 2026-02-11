@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { playKeyboardClick } from '@/lib/keyboard-sound';
 import { NewTabPage } from './pages/NewTabPage';
 import { WeeklyLogPage } from './pages/WeeklyLogPage';
@@ -222,6 +225,107 @@ export function ChromeBrowser() {
   const switchTab = useCallback((tabId: string) => {
     setActiveTabId(tabId);
   }, []);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end for tab reordering
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setTabs((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        const newItems = [...items];
+        const [removed] = newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, removed);
+        
+        return newItems;
+      });
+    }
+  }, []);
+
+  // Sortable Tab Component
+  const SortableTab = ({ tab }: { tab: Tab }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: tab.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+      <motion.button
+        ref={setNodeRef}
+        style={{ ...style, paddingLeft: '8px', paddingRight: '8px' }}
+        {...attributes}
+        {...listeners}
+        onClick={() => switchTab(tab.id)}
+        className={`
+          group relative flex items-center gap-2 py-3 text-sm font-normal whitespace-nowrap cursor-grab active:cursor-grabbing
+          ${activeTabId === tab.id 
+            ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/30 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
+            : 'bg-[#E8F0FE] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-[#3C3C3C] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
+          }
+        `}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      >
+        {/* Favicon */}
+        <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
+          {tab.favicon ? (
+            <img src={tab.favicon} alt="" className="w-4 h-4" />
+          ) : (
+            <div className={`w-4 h-4 rounded ${activeTabId === tab.id ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-500 dark:bg-gray-600'}`}></div>
+          )}
+        </div>
+        
+        {/* Tab Title */}
+        <span className="flex-1 truncate text-left">{tab.title}</span>
+        
+        {/* Close Button */}
+        {tabs.length > 1 && (
+          <motion.button
+            onClick={(e) => {
+              e.stopPropagation();
+              closeTab(tab.id, e);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+              activeTabId === tab.id
+                ? 'opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600'
+                : 'opacity-0 group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          >
+            <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </motion.button>
+        )}
+      </motion.button>
+    );
+  };
 
   const handleOmniboxSubmit = useCallback((value: string) => {
     const input = value.trim().toLowerCase();
@@ -831,58 +935,22 @@ export function ChromeBrowser() {
           
           {/* Tab Strip */}
           <div className="flex-1 flex items-end gap-0.5 overflow-x-auto scrollbar-hide h-full">
-            <AnimatePresence mode="popLayout">
-              {tabs.map((tab) => (
-                <motion.button
-                  key={tab.id}
-                  onClick={() => switchTab(tab.id)}
-                  className={`
-                    group relative flex items-center gap-2 py-3 text-sm font-normal whitespace-nowrap
-                    ${activeTabId === tab.id 
-                      ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/30 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
-                      : 'bg-[#E8F0FE] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-[#3C3C3C] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
-                    }
-                  `}
-                  style={{ paddingLeft: '8px', paddingRight: '8px' }}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                >
-                {/* Favicon */}
-                <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
-                  {tab.favicon ? (
-                    <img src={tab.favicon} alt="" className="w-4 h-4" />
-                  ) : (
-                    <div className={`w-4 h-4 rounded ${activeTabId === tab.id ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-500 dark:bg-gray-600'}`}></div>
-                  )}
-                </div>
-                
-                {/* Tab Title */}
-                <span className="flex-1 truncate text-left">{tab.title}</span>
-                
-                {/* Close Button */}
-                {tabs.length > 1 && (
-                  <motion.button
-                    onClick={(e) => closeTab(tab.id, e)}
-                    className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      activeTabId === tab.id
-                        ? 'opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        : 'opacity-0 group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-gray-600'
-                    }`}
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  >
-                    <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </motion.button>
-                )}
-              </motion.button>
-              ))}
-            </AnimatePresence>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={tabs.map(tab => tab.id)}
+                strategy={horizontalListSortingStrategy}
+              >
+                <AnimatePresence mode="popLayout">
+                  {tabs.map((tab) => (
+                    <SortableTab key={tab.id} tab={tab} />
+                  ))}
+                </AnimatePresence>
+              </SortableContext>
+            </DndContext>
             
             {/* New Tab Button */}
             <motion.button

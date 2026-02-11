@@ -11,6 +11,7 @@ const MOCK_POSTS = [
     date: '2024-01-01',
     excerpt: 'Starting a new year with fresh ideas and renewed energy. This week I focused on setting up my workspace and planning the year ahead.',
     hasDetailedContent: false,
+    status: 'published' as const,
   },
   {
     id: '2',
@@ -18,6 +19,7 @@ const MOCK_POSTS = [
     date: '2024-01-08',
     excerpt: 'Made significant progress on several projects. The momentum is building and I\'m feeling productive.',
     hasDetailedContent: false,
+    status: 'published' as const,
   },
   {
     id: '3',
@@ -25,6 +27,7 @@ const MOCK_POSTS = [
     date: '2024-01-15',
     excerpt: 'Taking time to reflect on the past few weeks. Sometimes slowing down helps you speed up.',
     hasDetailedContent: false,
+    status: 'published' as const,
   },
   {
     id: '4',
@@ -32,6 +35,7 @@ const MOCK_POSTS = [
     date: new Date().toISOString().split('T')[0],
     excerpt: 'Here\'s what I\'ve been up to this week.',
     hasDetailedContent: true,
+    status: 'published' as const,
     photos: [
       'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop',
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
@@ -74,7 +78,13 @@ function formatDate(dateString: string): string {
 export function WeeklyLogPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showPrivate, setShowPrivate] = useState(false);
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Filter posts based on privacy setting
+  const visiblePosts = MOCK_POSTS.filter(post => 
+    showPrivate || post.status === 'published'
+  );
 
   // Calculate which post is currently in view
   useEffect(() => {
@@ -102,6 +112,8 @@ export function WeeklyLogPage() {
           }
         }
       });
+      
+      setActiveIndex(newActiveIndex);
 
       setActiveIndex(newActiveIndex);
     };
@@ -112,19 +124,30 @@ export function WeeklyLogPage() {
       handleScroll(); // Initial call
       return () => container.removeEventListener('scroll', handleScroll);
     }
-  }, []);
+  }, [visiblePosts]);
 
 
   return (
     <div className="w-full h-full flex bg-white dark:bg-gray-950 overflow-hidden">
+      {/* Private/Draft Toggle */}
+      <motion.button
+        onClick={() => setShowPrivate(!showPrivate)}
+        className="fixed top-20 right-6 z-50 px-3 py-2 rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-xs text-gray-600 dark:text-gray-300"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        title={showPrivate ? 'Hide private/draft entries' : 'Show private/draft entries'}
+      >
+        {showPrivate ? '👁️ Hide Private' : '🔒 Show Private'}
+      </motion.button>
+
       {/* Left Sidebar - Timeline */}
       <div className="w-1/3 bg-gray-100 dark:bg-gray-900 relative border-r border-gray-200 dark:border-gray-800">
         <div className="h-full py-16 px-8 relative">
           {/* Timeline Lines */}
           <div className="relative h-full">
             {/* Thick separator lines */}
-            {MOCK_POSTS.map((post, index) => {
-              const isLast = index === MOCK_POSTS.length - 1;
+            {visiblePosts.map((post, index) => {
+              const isLast = index === visiblePosts.length - 1;
               const yPosition = index * 120; // Spacing between posts
               
               return (
@@ -144,7 +167,7 @@ export function WeeklyLogPage() {
             })}
 
             {/* Thin item lines */}
-            {MOCK_POSTS.map((post, index) => {
+            {visiblePosts.map((post, index) => {
               const yPosition = index * 120 + 60; // Position between separators
               
               return (
@@ -212,7 +235,7 @@ export function WeeklyLogPage() {
 
           {/* Posts */}
           <div className="space-y-32">
-            {MOCK_POSTS.map((post, index) => (
+            {visiblePosts.map((post, index) => (
               <motion.article
                 key={post.id}
                 ref={(el) => {
