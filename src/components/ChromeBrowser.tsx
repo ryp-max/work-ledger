@@ -621,7 +621,7 @@ export function ChromeBrowser() {
                   key={tab.id}
                   onClick={() => switchTab(tab.id)}
                   className={`
-                    group relative flex items-center gap-2 px-4 py-2 text-sm font-normal whitespace-nowrap
+                    group relative flex items-center gap-2 px-6 py-3 text-sm font-normal whitespace-nowrap
                     ${activeTabId === tab.id 
                       ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/30 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
                       : 'bg-[#E8F0FE] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-[#DCE8F8] dark:hover:bg-[#3F4043] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
