@@ -594,7 +594,7 @@ export function ChromeBrowser() {
         {/* Window Chrome - Header Area */}
         <div className="h-[48px] bg-[#E8F0FE] dark:bg-[#2D2D2D] border-b border-gray-300/30 dark:border-gray-700 flex items-end pb-0 relative z-10">
           {/* Traffic Lights */}
-          <div className="flex gap-1.5 ml-4 mr-4 mb-2 items-center">
+          <div className="flex gap-1.5 ml-2 mr-4 mb-2 items-center">
             <motion.button
               onClick={(e) => {
                 e.preventDefault();
