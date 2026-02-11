@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Mock photos - replace with actual images later
+// Mock photos - generic placeholders
 const MOCK_PHOTOS = [
-  { id: '1', src: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop', alt: 'Photo 1' },
-  { id: '2', src: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=1000&fit=crop', alt: 'Photo 2' },
-  { id: '3', src: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=800&fit=crop', alt: 'Photo 3' },
-  { id: '4', src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1200&fit=crop', alt: 'Photo 4' },
-  { id: '5', src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop', alt: 'Photo 5' },
-  { id: '6', src: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=900&fit=crop', alt: 'Photo 6' },
+  { id: '1', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23E5E7EB"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 1%3C/text%3E%3C/svg%3E', alt: 'Photo 1' },
+  { id: '2', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="1000"%3E%3Crect width="800" height="1000" fill="%23F3F4F6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 2%3C/text%3E%3C/svg%3E', alt: 'Photo 2' },
+  { id: '3', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="800"%3E%3Crect width="800" height="800" fill="%23E5E7EB"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 3%3C/text%3E%3C/svg%3E', alt: 'Photo 3' },
+  { id: '4', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="1200"%3E%3Crect width="800" height="1200" fill="%23F3F4F6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 4%3C/text%3E%3C/svg%3E', alt: 'Photo 4' },
+  { id: '5', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23E5E7EB"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 5%3C/text%3E%3C/svg%3E', alt: 'Photo 5' },
+  { id: '6', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="900"%3E%3Crect width="800" height="900" fill="%23F3F4F6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 6%3C/text%3E%3C/svg%3E', alt: 'Photo 6' },
 ];
 
 export function PhotosPage() {
