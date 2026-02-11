@@ -108,26 +108,37 @@ export function ChromeBrowser() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Keyboard shortcuts: ⌘L focuses omnibox, ⌘1-5 switches tabs, ⌘W closes active tab
+  // Keyboard shortcuts: ⌘L focuses omnibox, ⌘1-5 switches tabs, ⌘W closes active tab, ⌘T opens new tab
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifierKey = isMac ? e.metaKey : e.ctrlKey;
+      
+      // Focus omnibox with ⌘L (or Ctrl+L)
+      if (modifierKey && e.key === 'l') {
         e.preventDefault();
+        e.stopPropagation();
         omniboxRef.current?.focus();
         omniboxRef.current?.select();
+        return;
       }
-      // Tab switching with ⌘1-5
-      if ((e.metaKey || e.ctrlKey) && e.key >= '1' && e.key <= '5') {
+      
+      // Tab switching with ⌘1-5 (or Ctrl+1-5)
+      if (modifierKey && e.key >= '1' && e.key <= '5') {
         e.preventDefault();
+        e.stopPropagation();
         const tabIndex = parseInt(e.key) - 1;
         if (tabs[tabIndex]) {
           setActiveTabId(tabs[tabIndex].id);
         }
+        return;
       }
+      
       // Close active tab with ⌘W (or Ctrl+W)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
+      if (modifierKey && (e.key === 'w' || e.key === 'W')) {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         if (tabs.length > 1 && activeTabId) {
           setTabs(prev => {
             const filtered = prev.filter(t => t.id !== activeTabId);
@@ -138,11 +149,27 @@ export function ChromeBrowser() {
             return filtered;
           });
         }
+        return;
+      }
+      
+      // Open new tab with ⌘T (or Ctrl+T) and focus search bar
+      if (modifierKey && (e.key === 't' || e.key === 'T')) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        addTab('newtab');
+        // Focus the search bar after a short delay to ensure the tab is rendered
+        setTimeout(() => {
+          omniboxRef.current?.focus();
+          omniboxRef.current?.select();
+        }, 50);
+        return;
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [tabs, activeTabId]);
+    // Use capture phase to catch the event before it reaches the browser
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [tabs, activeTabId, addTab]);
 
   // Get favicon for page type
   const getFavicon = useCallback((pageType: PageType, url?: string) => {
