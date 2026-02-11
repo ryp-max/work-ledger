@@ -108,7 +108,7 @@ export function ChromeBrowser() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Keyboard shortcuts: ⌘L focuses omnibox, ⌘1-5 switches tabs
+  // Keyboard shortcuts: ⌘L focuses omnibox, ⌘1-5 switches tabs, ⌘W closes active tab
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
@@ -124,10 +124,25 @@ export function ChromeBrowser() {
           setActiveTabId(tabs[tabIndex].id);
         }
       }
+      // Close active tab with ⌘W (or Ctrl+W)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (tabs.length > 1 && activeTabId) {
+          setTabs(prev => {
+            const filtered = prev.filter(t => t.id !== activeTabId);
+            // Switch to the last remaining tab
+            if (filtered.length > 0) {
+              setActiveTabId(filtered[filtered.length - 1].id);
+            }
+            return filtered;
+          });
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [tabs]);
+  }, [tabs, activeTabId]);
 
   // Get favicon for page type
   const getFavicon = useCallback((pageType: PageType, url?: string) => {
