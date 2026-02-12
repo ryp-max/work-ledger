@@ -1,23 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Mock photos - generic placeholders
-const MOCK_PHOTOS = [
-  { id: '1', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23E5E7EB"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 1%3C/text%3E%3C/svg%3E', alt: 'Photo 1' },
-  { id: '2', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="1000"%3E%3Crect width="800" height="1000" fill="%23F3F4F6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 2%3C/text%3E%3C/svg%3E', alt: 'Photo 2' },
-  { id: '3', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="800"%3E%3Crect width="800" height="800" fill="%23E5E7EB"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 3%3C/text%3E%3C/svg%3E', alt: 'Photo 3' },
-  { id: '4', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="1200"%3E%3Crect width="800" height="1200" fill="%23F3F4F6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 4%3C/text%3E%3C/svg%3E', alt: 'Photo 4' },
-  { id: '5', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23E5E7EB"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 5%3C/text%3E%3C/svg%3E', alt: 'Photo 5' },
-  { id: '6', src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="900"%3E%3Crect width="800" height="900" fill="%23F3F4F6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="48" fill="%239CA3AF" text-anchor="middle" dominant-baseline="middle"%3EPhoto 6%3C/text%3E%3C/svg%3E', alt: 'Photo 6' },
-];
+import { usePostsStore } from '@/stores/usePostsStore';
 
 export function PhotosPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
-  const selectedPhotoData = MOCK_PHOTOS.find(p => p.id === selectedPhoto);
+  const posts = usePostsStore((s) => s.posts);
+  const photos = useMemo(
+    () =>
+      posts.flatMap((post) =>
+        (post.photos ?? []).map((src, idx) => ({
+          id: `${post.id}-${idx}`,
+          src,
+          alt: `${post.title} — Photo ${idx + 1}`,
+        }))
+      ),
+    [posts]
+  );
+
+  const selectedPhotoData = photos.find((p) => p.id === selectedPhoto);
 
   return (
     <div className="w-full h-full overflow-y-auto" style={{ padding: '16px' }}>
@@ -26,7 +30,12 @@ export function PhotosPage() {
         
         {/* Masonry Layout */}
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-          {MOCK_PHOTOS.map((photo, index) => (
+          {photos.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 col-span-full py-12">
+              No photos yet. Add photos to your weekly posts to see them here.
+            </p>
+          ) : (
+          photos.map((photo, index) => (
             <motion.div
               key={photo.id}
               className="mb-4 break-inside-avoid cursor-pointer"
@@ -51,7 +60,7 @@ export function PhotosPage() {
                 />
               </motion.div>
             </motion.div>
-          ))}
+          )))}
         </div>
       </div>
 
@@ -129,14 +138,14 @@ export function PhotosPage() {
             </motion.div>
 
             {/* Navigation Arrows */}
-            {MOCK_PHOTOS.length > 1 && (
+            {photos.length > 1 && (
               <>
-                {MOCK_PHOTOS.findIndex(p => p.id === selectedPhoto) > 0 && (
+                {photos.findIndex(p => p.id === selectedPhoto) > 0 && (
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const currentIndex = MOCK_PHOTOS.findIndex(p => p.id === selectedPhoto);
-                      setSelectedPhoto(MOCK_PHOTOS[currentIndex - 1].id);
+                      const currentIndex = photos.findIndex(p => p.id === selectedPhoto);
+                      setSelectedPhoto(photos[currentIndex - 1].id);
                       setZoomLevel(1);
                     }}
                     className="absolute left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white z-10"
@@ -148,12 +157,12 @@ export function PhotosPage() {
                     </svg>
                   </motion.button>
                 )}
-                {MOCK_PHOTOS.findIndex(p => p.id === selectedPhoto) < MOCK_PHOTOS.length - 1 && (
+                {photos.findIndex(p => p.id === selectedPhoto) < photos.length - 1 && (
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const currentIndex = MOCK_PHOTOS.findIndex(p => p.id === selectedPhoto);
-                      setSelectedPhoto(MOCK_PHOTOS[currentIndex + 1].id);
+                      const currentIndex = photos.findIndex(p => p.id === selectedPhoto);
+                      setSelectedPhoto(photos[currentIndex + 1].id);
                       setZoomLevel(1);
                     }}
                     className="absolute right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white z-10"
