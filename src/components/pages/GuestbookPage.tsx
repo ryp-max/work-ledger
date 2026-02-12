@@ -18,8 +18,8 @@ const MOCK_ENTRIES = [
 
 export function GuestbookPage() {
   return (
-    <div className="w-full h-full overflow-y-auto">
-      <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full h-full overflow-y-auto" style={{ padding: '16px' }}>
+      <div className="w-full max-w-4xl mx-auto">
         <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Guestbook</h1>
       
       {/* Sign Form */}

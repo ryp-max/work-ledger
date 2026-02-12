@@ -98,7 +98,7 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-4" style={{ marginTop: '-40px' }}>
+    <div className="w-full h-full flex flex-col items-center justify-center" style={{ padding: '16px', marginTop: '-40px' }}>
       {/* Centered Omnibox */}
       <div className="w-full mb-3" style={{ maxWidth: '640px' }}>
         <form onSubmit={handleSearchSubmit} className="relative">

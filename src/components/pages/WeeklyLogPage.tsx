@@ -141,8 +141,8 @@ export function WeeklyLogPage() {
       </motion.button>
 
       {/* Left Sidebar - Timeline */}
-      <div className="w-1/3 bg-gray-100 dark:bg-gray-900 relative border-r border-gray-200 dark:border-gray-800">
-        <div className="h-full p-4 relative">
+      <div className="w-1/3 bg-gray-100 dark:bg-gray-900 relative border-r border-gray-200 dark:border-gray-800" style={{ padding: '16px' }}>
+        <div className="h-full relative">
           {/* Timeline Lines */}
           <div className="relative h-full">
             {/* Thick separator lines */}
@@ -216,8 +216,9 @@ export function WeeklyLogPage() {
       <div 
         ref={containerRef}
         className="flex-1 overflow-y-auto bg-white dark:bg-gray-950"
+        style={{ padding: '16px' }}
       >
-        <div className="max-w-3xl mx-auto p-4">
+        <div className="max-w-3xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

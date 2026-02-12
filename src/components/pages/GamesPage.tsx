@@ -11,7 +11,7 @@ export function GamesPage() {
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Game Selector */}
-      <div className="flex gap-2 p-4 border-b border-gray-200 dark:border-gray-700" style={{ padding: '16px' }}>
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700" style={{ padding: '16px' }}>
         <motion.button
           onClick={() => setActiveGame('2048')}
           className={`px-4 py-2 rounded-lg text-sm font-medium ${
@@ -41,7 +41,7 @@ export function GamesPage() {
       </div>
 
       {/* Game Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto" style={{ padding: '16px' }}>
         <AnimatePresence mode="wait">
           {activeGame === '2048' && (
             <motion.div

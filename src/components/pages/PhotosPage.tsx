@@ -20,8 +20,8 @@ export function PhotosPage() {
   const selectedPhotoData = MOCK_PHOTOS.find(p => p.id === selectedPhoto);
 
   return (
-    <div className="w-full h-full overflow-y-auto">
-      <div className="w-full max-w-7xl mx-auto p-4">
+    <div className="w-full h-full overflow-y-auto" style={{ padding: '16px' }}>
+      <div className="w-full max-w-7xl mx-auto">
         <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Photos</h1>
         
         {/* Masonry Layout */}
