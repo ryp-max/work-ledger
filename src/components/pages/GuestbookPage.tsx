@@ -50,15 +50,16 @@ export function GuestbookPage() {
         {MOCK_ENTRIES.map((entry) => (
           <div
             key={entry.id}
-            className="p-6 border border-gray-200 rounded-lg bg-white"
+            className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
           >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-gray-900">{entry.name}</h3>
-              <time className="text-sm text-gray-500">{new Date(entry.date).toLocaleDateString()}</time>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">{entry.name}</h3>
+              <time className="text-sm text-gray-500 dark:text-gray-400">{new Date(entry.date).toLocaleDateString()}</time>
             </div>
-            <p className="text-gray-700">{entry.message}</p>
+            <p className="text-gray-700 dark:text-gray-300">{entry.message}</p>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
