@@ -11,7 +11,7 @@ export function GamesPage() {
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Game Selector */}
-      <div className="flex gap-2 p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex gap-2 p-4 border-b border-gray-200 dark:border-gray-700" style={{ padding: '16px' }}>
         <motion.button
           onClick={() => setActiveGame('2048')}
           className={`px-4 py-2 rounded-lg text-sm font-medium ${
@@ -192,7 +192,7 @@ function Game2048() {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-8">
+    <div className="w-full h-full flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="flex justify-between items-center mb-4">
           <motion.h2 
@@ -349,9 +349,9 @@ function Wordle() {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-8">
+    <div className="w-full h-full flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">Wordle</h2>
+        <h2 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">Wordle</h2>
 
         <AnimatePresence>
           {(won || gameOver) && (

@@ -69,7 +69,7 @@ export function SpotifyPage({
 
   return (
     <motion.div 
-      className="w-full h-full flex flex-col items-center justify-center gap-8 px-8"
+      className="w-full h-full flex flex-col items-center justify-center gap-6 p-4"
       style={{ backgroundColor }}
       animate={{ backgroundColor }}
       transition={{ duration: 0.8, ease: 'easeInOut' }}

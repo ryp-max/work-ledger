@@ -21,8 +21,8 @@ export function PhotosPage() {
 
   return (
     <div className="w-full h-full overflow-y-auto">
-      <div className="w-full max-w-7xl mx-auto p-8">
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-8">Photos</h1>
+      <div className="w-full max-w-7xl mx-auto p-4">
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Photos</h1>
         
         {/* Masonry Layout */}
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">

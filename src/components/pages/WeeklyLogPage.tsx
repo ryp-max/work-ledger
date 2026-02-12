@@ -142,7 +142,7 @@ export function WeeklyLogPage() {
 
       {/* Left Sidebar - Timeline */}
       <div className="w-1/3 bg-gray-100 dark:bg-gray-900 relative border-r border-gray-200 dark:border-gray-800">
-        <div className="h-full py-16 px-8 relative">
+        <div className="h-full p-4 relative">
           {/* Timeline Lines */}
           <div className="relative h-full">
             {/* Thick separator lines */}
@@ -217,13 +217,13 @@ export function WeeklyLogPage() {
         ref={containerRef}
         className="flex-1 overflow-y-auto bg-white dark:bg-gray-950"
       >
-        <div className="max-w-3xl mx-auto py-16 px-12">
+        <div className="max-w-3xl mx-auto p-4">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-16"
+            className="mb-8"
           >
             <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 mb-3 tracking-tight">
               Weekly Log
@@ -234,7 +234,7 @@ export function WeeklyLogPage() {
           </motion.div>
 
           {/* Posts */}
-          <div className="space-y-32">
+          <div className="space-y-16">
             {visiblePosts.map((post, index) => (
               <motion.article
                 key={post.id}
