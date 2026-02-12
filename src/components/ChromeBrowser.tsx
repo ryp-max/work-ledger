@@ -1,29 +1,31 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { playKeyboardClick } from '@/lib/keyboard-sound';
+import { useBrowserStore, type Tab, type PageType } from '@/stores/useBrowserStore';
 import { NewTabPage } from './pages/NewTabPage';
 import { WeeklyLogPage } from './pages/WeeklyLogPage';
+import { DailyLogPage } from './pages/DailyLogPage';
 import { PhotosPage } from './pages/PhotosPage';
 import { GuestbookPage } from './pages/GuestbookPage';
-import { GamesPage } from './pages/GamesPage';
-import { SpotifyPage } from './pages/SpotifyPage';
-import { RachelChatPage } from './pages/RachelChatPage';
 
-export type PageType = 'newtab' | 'weekly-log' | 'photos' | 'guestbook' | 'games' | 'spotify' | 'rachel' | 'url';
+// Lazy-load heavy pages for faster initial load (ryOS pattern)
+const GamesPage = dynamic(() => import('./pages/GamesPage').then((m) => ({ default: m.GamesPage })), {
+  loading: () => <div className="flex items-center justify-center w-full h-full text-gray-500">Loading...</div>,
+});
+const SpotifyPage = dynamic(() => import('./pages/SpotifyPage').then((m) => ({ default: m.SpotifyPage })), {
+  loading: () => <div className="flex items-center justify-center w-full h-full text-gray-500">Loading...</div>,
+});
+const RachelChatPage = dynamic(() => import('./pages/RachelChatPage').then((m) => ({ default: m.RachelChatPage })), {
+  loading: () => <div className="flex items-center justify-center w-full h-full text-gray-500">Loading...</div>,
+});
 
-export interface Tab {
-  id: string;
-  title: string;
-  pageType: PageType;
-  url: string;
-  favicon?: string;
-  data?: { initialQuery?: string };
-}
+export type { PageType, Tab };
 
 const DEFAULT_TABS: Tab[] = [
   { id: '1', title: 'Home', pageType: 'newtab', url: 'chrome://newtab' },
@@ -31,58 +33,116 @@ const DEFAULT_TABS: Tab[] = [
 
 export const BOOKMARKS = [
   { id: 'weekly-log', title: 'Weekly Log', url: 'chrome://weekly-log', icon: '📝' },
+  { id: 'daily-log', title: 'Daily Log', url: 'chrome://daily-log', icon: '📅' },
   { id: 'games', title: 'Games', url: 'chrome://games', icon: '🎮' },
   { id: 'spotify', title: 'Spotify', url: 'https://open.spotify.com', icon: '🎵' },
   { id: 'photos', title: 'Photos', url: 'chrome://photos', icon: '📷' },
   { id: 'guestbook', title: 'Guestbook', url: 'chrome://guestbook', icon: '✍️' },
 ];
 
-export function ChromeBrowser() {
-  // Load tabs from localStorage or use defaults
-  const [tabs, setTabs] = useState<Tab[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('workLedgerTabs');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          return DEFAULT_TABS;
+// SortableTab defined outside to prevent remounts on parent re-render (fixes tab flicker)
+function SortableTab({
+  tab,
+  activeTabId,
+  tabsLength,
+  onSwitch,
+  onClose,
+}: {
+  tab: Tab;
+  activeTabId: string;
+  tabsLength: number;
+  onSwitch: (id: string) => void;
+  onClose: (id: string, e: React.MouseEvent) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <motion.button
+      ref={setNodeRef}
+      style={{ ...style, paddingLeft: '8px', paddingRight: '8px' }}
+      {...attributes}
+      {...listeners}
+      onClick={() => onSwitch(tab.id)}
+      className={`
+        group relative flex items-center gap-2 py-3 text-sm font-normal whitespace-nowrap cursor-grab active:cursor-grabbing
+        ${activeTabId === tab.id 
+          ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/30 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
+          : 'bg-[#E8F0FE] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-[#3C3C3C] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
         }
-      }
-    }
-    return DEFAULT_TABS;
-  });
-  const [activeTabId, setActiveTabId] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('workLedgerActiveTab');
-      return saved || '1';
-    }
-    return '1';
-  });
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('darkMode');
-      return saved ? JSON.parse(saved) : false;
-    }
-    return false;
-  });
-  const [isClosed, setIsClosed] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('reducedMotion');
-      return saved ? JSON.parse(saved) : window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    }
-    return false;
-  });
-  const [audioEnabled, setAudioEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('audioEnabled');
-      return saved ? JSON.parse(saved) : true;
-    }
-    return true;
-  });
+      `}
+      initial={false}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
+      <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
+        {tab.favicon ? (
+          <img src={tab.favicon} alt="" className="w-4 h-4" />
+        ) : (
+          <div className={`w-4 h-4 rounded ${activeTabId === tab.id ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-500 dark:bg-gray-600'}`}></div>
+        )}
+      </div>
+      
+      <span className="flex-1 truncate text-left">{tab.title}</span>
+      
+      {tabsLength > 1 && (
+        <motion.button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose(tab.id, e);
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+            activeTabId === tab.id
+              ? 'opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600'
+              : 'opacity-0 group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-gray-600'
+          }`}
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        >
+          <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </motion.button>
+      )}
+    </motion.button>
+  );
+}
+
+export function ChromeBrowser() {
+  // Zustand store for tabs and settings (ryOS pattern)
+  const tabs = useBrowserStore((s) => s.tabs);
+  const activeTabId = useBrowserStore((s) => s.activeTabId);
+  const darkMode = useBrowserStore((s) => s.darkMode);
+  const isClosed = useBrowserStore((s) => s.isClosed);
+  const isMinimized = useBrowserStore((s) => s.isMinimized);
+  const isFullscreen = useBrowserStore((s) => s.isFullscreen);
+  const reducedMotion = useBrowserStore((s) => s.reducedMotion);
+  const audioEnabled = useBrowserStore((s) => s.audioEnabled);
+  const setDarkMode = useBrowserStore((s) => s.setDarkMode);
+  const setIsClosed = useBrowserStore((s) => s.setIsClosed);
+  const setIsMinimized = useBrowserStore((s) => s.setIsMinimized);
+  const setIsFullscreen = useBrowserStore((s) => s.setIsFullscreen);
+  const setReducedMotion = useBrowserStore((s) => s.setReducedMotion);
+  const setAudioEnabled = useBrowserStore((s) => s.setAudioEnabled);
+  const storeAddTab = useBrowserStore((s) => s.addTab);
+  const storeCloseTab = useBrowserStore((s) => s.closeTab);
+  const storeSetActiveTabId = useBrowserStore((s) => s.setActiveTabId);
+  const storeReorderTabs = useBrowserStore((s) => s.reorderTabs);
+
   const omniboxRef = useRef<HTMLInputElement>(null);
   
   // Playlist
@@ -148,87 +208,27 @@ export function ChromeBrowser() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Keyboard shortcuts will be set up after addTab is defined
+  const addTab = useCallback(
+    (pageType: PageType = 'newtab', url?: string, title?: string, data?: Tab['data']) => {
+      storeAddTab(pageType, url, title, data);
+    },
+    [storeAddTab]
+  );
 
-  // Get favicon for page type
-  const getFavicon = useCallback((pageType: PageType, url?: string) => {
-    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-      try {
-        const domain = new URL(url).hostname;
-        return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
-      } catch {
-        return undefined;
-      }
-    }
-    
-    // Default favicons for internal pages
-    const favicons: Record<PageType, string> = {
-      'newtab': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
-      'spotify': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.84-.179-.84-.66 0-.36.24-.66.54-.779 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
-      'games': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M15.5 12c0 1.38-1.12 2.5-2.5 2.5s-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5zm-2.5-8c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S18.02 4 13 4zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
-      'weekly-log': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>',
-      'photos': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
-      'guestbook': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>',
-      'url': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
-      'rachel': 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F59E0B"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>',
-    };
-    return favicons[pageType];
-  }, []);
+  const closeTab = useCallback(
+    (tabId: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      storeCloseTab(tabId);
+    },
+    [storeCloseTab]
+  );
 
-  const addTab = useCallback((pageType: PageType = 'newtab', url?: string, title?: string, data?: Tab['data']) => {
-    // If trying to add Spotify tab, check if one already exists
-    if (pageType === 'spotify') {
-      const existingSpotifyTab = tabs.find(t => t.pageType === 'spotify');
-      if (existingSpotifyTab) {
-        setActiveTabId(existingSpotifyTab.id);
-        return;
-      }
-    }
-    
-    const newTab: Tab = {
-      id: Date.now().toString(),
-      title: title || 'New Tab',
-      pageType,
-      url: url || `chrome://${pageType}`,
-      favicon: getFavicon(pageType, url),
-      ...(data && { data }),
-    };
-    setTabs(prev => [...prev, newTab]);
-    setActiveTabId(newTab.id);
-  }, [tabs, getFavicon]);
-
-  // Persist tabs to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('workLedgerTabs', JSON.stringify(tabs));
-    }
-  }, [tabs]);
-
-  // Persist active tab to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('workLedgerActiveTab', activeTabId);
-    }
-  }, [activeTabId]);
-
-  const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Prevent closing the last tab
-    if (tabs.length <= 1) return;
-    
-    setTabs(prev => {
-      const filtered = prev.filter(t => t.id !== tabId);
-      // If we closed the active tab, switch to the last remaining tab
-      if (tabId === activeTabId && filtered.length > 0) {
-        setActiveTabId(filtered[filtered.length - 1].id);
-      }
-      return filtered;
-    });
-  }, [activeTabId, tabs.length]);
-
-  const switchTab = useCallback((tabId: string) => {
-    setActiveTabId(tabId);
-  }, []);
+  const switchTab = useCallback(
+    (tabId: string) => {
+      storeSetActiveTabId(tabId);
+    },
+    [storeSetActiveTabId]
+  );
 
   // Drag and drop sensors with activation constraint
   const sensors = useSensors(
@@ -243,97 +243,19 @@ export function ChromeBrowser() {
   );
 
   // Handle drag end for tab reordering
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (over && active.id !== over.id) {
-      setTabs((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        
-        const newItems = [...items];
-        const [removed] = newItems.splice(oldIndex, 1);
-        newItems.splice(newIndex, 0, removed);
-        
-        return newItems;
-      });
-    }
-  }, []);
-
-  // Sortable Tab Component
-  const SortableTab = ({ tab }: { tab: Tab }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: tab.id });
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    };
-
-    return (
-      <motion.button
-        ref={setNodeRef}
-        style={{ ...style, paddingLeft: '8px', paddingRight: '8px' }}
-        {...attributes}
-        {...listeners}
-        onClick={() => switchTab(tab.id)}
-        className={`
-          group relative flex items-center gap-2 py-3 text-sm font-normal whitespace-nowrap cursor-grab active:cursor-grabbing
-          ${activeTabId === tab.id 
-            ? 'bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-gray-100 rounded-t-lg border-t border-x border-gray-300/30 dark:border-gray-600 min-w-[160px] max-w-[240px]' 
-            : 'bg-[#E8F0FE] dark:bg-[#35363A] text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-[#3C3C3C] rounded-t-lg border-t border-x border-transparent min-w-[120px] max-w-[200px]'
-          }
-        `}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      >
-        {/* Favicon */}
-        <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
-          {tab.favicon ? (
-            <img src={tab.favicon} alt="" className="w-4 h-4" />
-          ) : (
-            <div className={`w-4 h-4 rounded ${activeTabId === tab.id ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-500 dark:bg-gray-600'}`}></div>
-          )}
-        </div>
-        
-        {/* Tab Title */}
-        <span className="flex-1 truncate text-left">{tab.title}</span>
-        
-        {/* Close Button */}
-        {tabs.length > 1 && (
-          <motion.button
-            onClick={(e) => {
-              e.stopPropagation();
-              closeTab(tab.id, e);
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            className={`ml-1 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-              activeTabId === tab.id
-                ? 'opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600'
-                : 'opacity-0 group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </motion.button>
-        )}
-      </motion.button>
-    );
-  };
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+        const oldIndex = tabs.findIndex((item) => item.id === active.id);
+        const newIndex = tabs.findIndex((item) => item.id === over.id);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          storeReorderTabs(oldIndex, newIndex);
+        }
+      }
+    },
+    [tabs, storeReorderTabs]
+  );
 
   const handleOmniboxSubmit = useCallback((value: string) => {
     const trimmed = value.trim();
@@ -392,7 +314,7 @@ export function ChromeBrowser() {
         e.stopPropagation();
         const tabIndex = parseInt(e.key) - 1;
         if (tabs[tabIndex]) {
-          setActiveTabId(tabs[tabIndex].id);
+          storeSetActiveTabId(tabs[tabIndex].id);
         }
         return;
       }
@@ -403,14 +325,7 @@ export function ChromeBrowser() {
         e.stopPropagation();
         e.stopImmediatePropagation();
         if (tabs.length > 1 && activeTabId) {
-          setTabs(prev => {
-            const filtered = prev.filter(t => t.id !== activeTabId);
-            // Switch to the last remaining tab
-            if (filtered.length > 0) {
-              setActiveTabId(filtered[filtered.length - 1].id);
-            }
-            return filtered;
-          });
+          storeCloseTab(activeTabId);
         }
         return;
       }
@@ -432,7 +347,7 @@ export function ChromeBrowser() {
     // Use capture phase to catch the event before it reaches the browser
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [tabs, activeTabId, addTab]);
+  }, [tabs, activeTabId, addTab, storeSetActiveTabId, storeCloseTab]);
 
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
   const isSpotifyTab = activeTab.pageType === 'spotify';
@@ -671,6 +586,8 @@ export function ChromeBrowser() {
         );
       case 'weekly-log':
         return <WeeklyLogPage />;
+      case 'daily-log':
+        return <DailyLogPage />;
       case 'photos':
         return <PhotosPage />;
       case 'guestbook':
@@ -713,19 +630,6 @@ export function ChromeBrowser() {
     }
   };
 
-
-  // Save preferences to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('reducedMotion', JSON.stringify(reducedMotion));
-    }
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('audioEnabled', JSON.stringify(audioEnabled));
-    }
-  }, [audioEnabled]);
 
   // Apply reduced motion class
   useEffect(() => {
@@ -962,11 +866,16 @@ export function ChromeBrowser() {
                 items={tabs.map(tab => tab.id)}
                 strategy={horizontalListSortingStrategy}
               >
-                <AnimatePresence mode="popLayout">
-                  {tabs.map((tab) => (
-                    <SortableTab key={tab.id} tab={tab} />
-                  ))}
-                </AnimatePresence>
+                {tabs.map((tab) => (
+                  <SortableTab
+                    key={tab.id}
+                    tab={tab}
+                    activeTabId={activeTabId}
+                    tabsLength={tabs.length}
+                    onSwitch={switchTab}
+                    onClose={closeTab}
+                  />
+                ))}
               </SortableContext>
             </DndContext>
             

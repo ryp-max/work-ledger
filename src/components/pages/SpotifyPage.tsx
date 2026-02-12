@@ -1,8 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { extractDominantColor, isLightColor, invertColor, hexToRgba } from '@/lib/color-extractor';
+import { hexToRgba } from '@/lib/color-extractor';
+import { useSpotifyLogic } from '@/hooks/useSpotifyLogic';
 
 interface SpotifyPageProps {
   isPlaying: boolean;
@@ -35,37 +35,11 @@ export function SpotifyPage({
   progress,
   formatTime
 }: SpotifyPageProps) {
-  const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
-  const [isLightBg, setIsLightBg] = useState(true);
-  const [inverseColor, setInverseColor] = useState<string>('#000000');
-
-  // Extract dominant color from album cover
-  useEffect(() => {
-    if (currentSong.albumCover) {
-      // Add a small delay to ensure image is loaded
-      const timer = setTimeout(() => {
-        extractDominantColor(currentSong.albumCover!)
-          .then((color) => {
-            console.log('Extracted color:', color, 'for song:', currentSong.title);
-            setBackgroundColor(color);
-            setIsLightBg(isLightColor(color));
-            setInverseColor(invertColor(color));
-          })
-          .catch((error) => {
-            console.error('Failed to extract color:', error);
-            setBackgroundColor('#ffffff');
-            setIsLightBg(true);
-            setInverseColor('#000000');
-          });
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    } else {
-      setBackgroundColor('#ffffff');
-      setIsLightBg(true);
-      setInverseColor('#000000');
-    }
-  }, [currentSong.albumCover, currentSong.id, currentSong.title]);
+  const { backgroundColor, isLightBg, inverseColor } = useSpotifyLogic({
+    albumCover: currentSong.albumCover,
+    songId: currentSong.id,
+    songTitle: currentSong.title,
+  });
 
   return (
     <motion.div 

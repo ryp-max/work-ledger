@@ -2,62 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-
-// Mock blog posts - replace with actual MDX loading later
-const MOCK_POSTS = [
-  {
-    id: '1',
-    title: 'Week 01: Getting Started',
-    date: '2024-01-01',
-    excerpt: 'Starting a new year with fresh ideas and renewed energy. This week I focused on setting up my workspace and planning the year ahead.',
-    hasDetailedContent: false,
-    status: 'published' as const,
-  },
-  {
-    id: '2',
-    title: 'Week 02: Building Momentum',
-    date: '2024-01-08',
-    excerpt: 'Made significant progress on several projects. The momentum is building and I\'m feeling productive.',
-    hasDetailedContent: false,
-    status: 'published' as const,
-  },
-  {
-    id: '3',
-    title: 'Week 03: Reflections',
-    date: '2024-01-15',
-    excerpt: 'Taking time to reflect on the past few weeks. Sometimes slowing down helps you speed up.',
-    hasDetailedContent: false,
-    status: 'published' as const,
-  },
-  {
-    id: '4',
-    title: 'Week 04: Current Update',
-    date: new Date().toISOString().split('T')[0],
-    excerpt: 'Here\'s what I\'ve been up to this week.',
-    hasDetailedContent: true,
-    status: 'published' as const,
-    photos: [
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=600&fit=crop',
-    ],
-    workInProgress: [
-      'Redesigning the user dashboard with better analytics',
-      'Building a new API endpoint for real-time notifications',
-      'Writing documentation for the latest feature release',
-    ],
-    nextWeekGoals: [
-      'Launch the beta version of the new feature',
-      'Complete the mobile app redesign',
-      'Schedule user testing sessions',
-    ],
-    lifeUpdates: [
-      'Finally finished reading "The Design of Everyday Things" - highly recommend!',
-      'Tried a new coffee shop downtown and their cold brew is amazing',
-      'Started learning piano again after a 5-year break - fingers are rusty but it feels good',
-    ],
-  },
-];
+import { usePostsStore } from '@/stores/usePostsStore';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { LoginModal } from '@/components/LoginModal';
+import { CreatePostForm } from '@/components/CreatePostForm';
 
 // Helper function to extract week number from title
 function getWeekNumber(title: string): string {
@@ -79,8 +27,26 @@ export function WeeklyLogPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const visiblePosts = MOCK_POSTS.filter(post => post.status === 'published');
+  const posts = usePostsStore((s) => s.posts);
+  const canPost = useAuthStore((s) => s.canPost);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const username = useAuthStore((s) => s.username);
+  const logout = useAuthStore((s) => s.logout);
+
+  const visiblePosts = posts.filter(
+    (p) => p.type === 'weekly' && p.status === 'published'
+  );
+
+  const handleCreatePostClick = () => {
+    if (canPost()) {
+      setShowCreateForm(true);
+    } else {
+      setShowLoginModal(true);
+    }
+  };
 
   // Calculate which post is currently in view
   useEffect(() => {
@@ -109,8 +75,6 @@ export function WeeklyLogPage() {
         }
       });
       
-      setActiveIndex(newActiveIndex);
-
       setActiveIndex(newActiveIndex);
     };
 
@@ -211,13 +175,51 @@ export function WeeklyLogPage() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="mb-8"
           >
-            <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 mb-3 tracking-tight">
-              Weekly Log
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              A collection of weekly reflections and updates
-            </p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 mb-3 tracking-tight">
+                  Weekly Log
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  A collection of weekly reflections and updates
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleCreatePostClick}
+                  className="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 text-sm font-medium"
+                >
+                  Create post
+                </button>
+                {isLoggedIn && (
+                  <>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {username}
+                    </span>
+                    <button
+                      onClick={() => logout()}
+                      className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+                    >
+                      Log out
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </motion.div>
+
+          <LoginModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+            onSuccess={() => setShowCreateForm(true)}
+          />
+
+          {showCreateForm && canPost() && (
+            <CreatePostForm
+              postType="weekly"
+              onClose={() => setShowCreateForm(false)}
+            />
+          )}
 
           {/* Posts */}
           <div className="space-y-16">

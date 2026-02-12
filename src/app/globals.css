@@ -3,6 +3,36 @@
 
 :root {
   --font-handwriting: 'Caveat', 'Kalam', cursive;
+
+  /* Work Ledger design tokens (ryOS-inspired) */
+  --wl-space-xs: 4px;
+  --wl-space-sm: 8px;
+  --wl-space-md: 16px;
+  --wl-space-lg: 24px;
+  --wl-space-xl: 32px;
+  --wl-space-2xl: 48px;
+
+  --wl-radius-sm: 0.25rem;
+  --wl-radius-md: 0.5rem;
+  --wl-radius-lg: 0.75rem;
+  --wl-radius-xl: 1rem;
+  --wl-radius-2xl: 1.25rem;
+
+  --wl-color-bg: #ffffff;
+  --wl-color-bg-muted: #f9fafb;
+  --wl-color-text: #111827;
+  --wl-color-text-muted: #6b7280;
+  --wl-color-border: #e5e7eb;
+  --wl-color-accent: #3b82f6;
+}
+
+.dark {
+  --wl-color-bg: #0f172a;
+  --wl-color-bg-muted: #1e293b;
+  --wl-color-text: #f8fafc;
+  --wl-color-text-muted: #94a3b8;
+  --wl-color-border: #334155;
+  --wl-color-accent: #60a5fa;
 }
 
 * {
