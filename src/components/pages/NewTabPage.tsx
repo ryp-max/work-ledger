@@ -107,7 +107,7 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
       </div>
 
       {/* Centered Omnibox */}
-      <div className="w-full mb-8" style={{ maxWidth: '640px' }}>
+      <div className="w-full" style={{ maxWidth: '640px', marginBottom: '32px' }}>
         <form onSubmit={handleSearchSubmit} className="relative">
           <div 
             className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-1 focus-within:ring-gray-300 dark:focus-within:ring-gray-500 transition-all duration-200 px-5 py-3"
@@ -129,7 +129,7 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
       </div>
 
       {/* Shortcuts - Chrome-style Squircle Tiles */}
-      <div className="w-full grid grid-cols-5 gap-3" style={{ maxWidth: '640px' }}>
+      <div className="w-full grid grid-cols-5 gap-3" style={{ maxWidth: '640px', gap: '24px' }}>
         {SHORTCUTS.map((shortcut) => (
           <button
             key={shortcut.id}
