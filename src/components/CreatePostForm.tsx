@@ -1,10 +1,21 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { usePostsStore } from '@/stores/usePostsStore';
 
 const MAX_FILE_SIZE_MB = 2;
+
+// ISO 8601 week number: week 1 is the week containing the year's first Thursday
+function getWeekOfYear(dateStr: string): number {
+  const date = new Date(dateStr + 'T12:00:00');
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7; // Monday = 1, Sunday = 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return weekNo;
+}
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -22,8 +33,8 @@ interface CreatePostFormProps {
 
 export function CreatePostForm({ onClose }: CreatePostFormProps) {
   const addPost = usePostsStore((s) => s.addPost);
-  const [title, setTitle] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [subtitle, setSubtitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [hasDetailedContent, setHasDetailedContent] = useState(false);
   const [workInProgress, setWorkInProgress] = useState('');
@@ -71,9 +82,14 @@ export function CreatePostForm({ onClose }: CreatePostFormProps) {
     setUploadedPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const weekNum = useMemo(() => getWeekOfYear(date), [date]);
+  const generatedTitle = subtitle.trim()
+    ? `Week ${weekNum.toString().padStart(2, '0')}: ${subtitle.trim()}`
+    : `Week ${weekNum.toString().padStart(2, '0')}`;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !excerpt.trim()) return;
+    if (!excerpt.trim()) return;
 
     const wip = parseLines(workInProgress);
     const goals = parseLines(nextWeekGoals);
@@ -83,7 +99,7 @@ export function CreatePostForm({ onClose }: CreatePostFormProps) {
 
     addPost({
       type: 'weekly',
-      title: title.trim(),
+      title: generatedTitle,
       date,
       excerpt: excerpt.trim(),
       status: 'published',
@@ -111,19 +127,6 @@ export function CreatePostForm({ onClose }: CreatePostFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Title
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Week 01: Getting Started"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Date
           </label>
           <input
@@ -132,6 +135,23 @@ export function CreatePostForm({ onClose }: CreatePostFormProps) {
             onChange={(e) => setDate(e.target.value)}
             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Title
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm shrink-0">
+              Week {weekNum.toString().padStart(2, '0')}
+            </span>
+            <input
+              type="text"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="Optional subtitle (e.g. Getting Started)"
+              className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

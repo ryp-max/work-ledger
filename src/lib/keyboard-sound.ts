@@ -3,7 +3,10 @@ let audioContext: AudioContext | null = null;
 
 const getAudioContext = () => {
   if (!audioContext) {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass = window.AudioContext ?? (window as unknown as { webkitAudioContext?: new () => AudioContext }).webkitAudioContext;
+    if (AudioContextClass) {
+      audioContext = new AudioContextClass();
+    }
   }
   return audioContext;
 };
@@ -11,7 +14,8 @@ const getAudioContext = () => {
 export const playKeyboardClick = async () => {
   try {
     const ctx = getAudioContext();
-    
+    if (!ctx) return;
+
     // Resume audio context if suspended (browser autoplay policy)
     if (ctx.state === 'suspended') {
       await ctx.resume();

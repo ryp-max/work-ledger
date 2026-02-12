@@ -378,7 +378,7 @@ export function ChromeBrowser() {
 
   const nextSong = useCallback(() => {
     if (isShuffled && shuffledOrder.length > 0) {
-      let nextShuffleIndex = shuffleIndex + 1;
+      const nextShuffleIndex = shuffleIndex + 1;
       if (nextShuffleIndex >= shuffledOrder.length) {
         const newShuffled = shuffleArray(PLAYLIST.map((_, i) => i));
         setShuffledOrder(newShuffled);
@@ -513,7 +513,7 @@ export function ChromeBrowser() {
         // Auto-play next song when current ends
         shouldAutoPlayRef.current = true;
         if (isShuffled && shuffledOrder.length > 0) {
-          let nextShuffleIndex = shuffleIndex + 1;
+          const nextShuffleIndex = shuffleIndex + 1;
           if (nextShuffleIndex >= shuffledOrder.length) {
             const newShuffled = shuffleArray(PLAYLIST.map((_, i) => i));
             setShuffledOrder(newShuffled);

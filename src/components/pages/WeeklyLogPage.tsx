@@ -97,7 +97,6 @@ export function WeeklyLogPage() {
           <div className="relative h-full">
             {/* Thick separator lines */}
             {visiblePosts.map((post, index) => {
-              const isLast = index === visiblePosts.length - 1;
               const yPosition = index * 120; // Spacing between posts
               
               return (
