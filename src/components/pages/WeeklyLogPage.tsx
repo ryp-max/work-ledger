@@ -100,22 +100,22 @@ export function WeeklyLogPage() {
   return (
     <div className="w-full h-full flex bg-white dark:bg-gray-950 overflow-hidden">
       {/* Left Sidebar - Table of Contents */}
-      <div className="w-40 shrink-0 bg-gray-50 dark:bg-gray-900/50 border-r border-gray-200 dark:border-gray-800 flex flex-col">
-        <div className="pt-6 pb-4 px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+      <div className="w-36 shrink-0 bg-white dark:bg-gray-950 border-r border-gray-100 dark:border-gray-800 flex flex-col">
+        <div className="pt-6 pb-3 px-3">
+          <h2 className="text-[11px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
             Contents
           </h2>
         </div>
-        <nav className="flex-1 overflow-y-auto py-2 px-3">
-          <div className="relative pl-3 border-l-2 border-gray-200 dark:border-gray-700">
+        <nav className="flex-1 overflow-y-auto py-1 px-3">
+          <div className="relative pl-2.5 border-l border-gray-200 dark:border-gray-700">
             {visiblePosts.map((post, index) => (
               <button
                 key={post.id}
                 onClick={() => scrollToPost(index)}
-                className={`block w-full text-left py-2 pl-3 -ml-px border-l-2 transition-colors ${
+                className={`block w-full text-left py-2 pl-2.5 -ml-px border-l-2 transition-colors ${
                   activeIndex === index
                     ? 'border-l-orange-500 text-orange-600 dark:text-orange-400 font-medium'
-                    : 'border-l-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    : 'border-l-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
                 }`}
               >
                 <span className="text-sm">
@@ -139,14 +139,14 @@ export function WeeklyLogPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-8"
+            className="mb-10"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 mb-3 tracking-tight">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-50 mb-1 tracking-tight">
                   Weekly Log
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   A collection of weekly reflections and updates
                 </p>
               </div>
@@ -185,7 +185,7 @@ export function WeeklyLogPage() {
           )}
 
           {/* Posts */}
-          <div className="space-y-16">
+          <div className="space-y-12">
             {visiblePosts.map((post, index) => (
               <motion.article
                 key={post.id}
@@ -203,9 +203,9 @@ export function WeeklyLogPage() {
                 className="group relative"
               >
                 {/* Title with Week # and Date */}
-                <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
                   <motion.h2 
-                    className="text-2xl font-semibold text-gray-900 dark:text-gray-50 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors"
+                    className="text-xl font-semibold text-gray-900 dark:text-gray-50 tracking-tight"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -226,10 +226,10 @@ export function WeeklyLogPage() {
                           deletePost(post.id);
                         }
                       }}
-                      className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+                      className="shrink-0 p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors opacity-70 hover:opacity-100"
                       title="Delete post"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -239,7 +239,7 @@ export function WeeklyLogPage() {
                 {/* Subtitle */}
                 {post.title.includes(':') && (
                   <motion.p 
-                    className="text-lg text-gray-700 dark:text-gray-300 mb-8 font-medium"
+                    className="text-base text-gray-600 dark:text-gray-400 mb-6"
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -251,7 +251,7 @@ export function WeeklyLogPage() {
 
                 {/* Excerpt */}
                 <motion.p 
-                  className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8 text-lg"
+                  className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 text-base"
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -263,7 +263,7 @@ export function WeeklyLogPage() {
                 {/* Detailed Content */}
                 {post.hasDetailedContent && (
                   <motion.div 
-                    className="space-y-8 mt-8"
+                    className="space-y-6 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -289,7 +289,7 @@ export function WeeklyLogPage() {
                               duration: 0.5,
                               ease: [0.16, 1, 0.3, 1]
                             }}
-                            className="relative w-56 h-56 shrink-0 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer group/photo"
+                            className="relative w-56 h-56 shrink-0 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer group/photo shadow-sm"
                             whileHover={{ scale: 1.05 }}
                             onClick={() => {
                               setLightboxPhotos(post.photos ?? []);
@@ -317,7 +317,7 @@ export function WeeklyLogPage() {
                         transition={{ delay: index * 0.1 + 0.8, duration: 0.5 }}
                         className="py-2 mx-auto max-w-2xl"
                       >
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 text-center">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           Work in Progress
                         </h3>
                         <ul className="space-y-3">
@@ -347,7 +347,7 @@ export function WeeklyLogPage() {
                         transition={{ delay: index * 0.1 + 1.0, duration: 0.5 }}
                         className="py-2 mx-auto max-w-2xl"
                       >
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 text-center">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           Next Week Goals
                         </h3>
                         <ul className="space-y-3">
@@ -377,7 +377,7 @@ export function WeeklyLogPage() {
                         transition={{ delay: index * 0.1 + 1.2, duration: 0.5 }}
                         className="py-2 mx-auto max-w-2xl"
                       >
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4 text-center">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                           Life Updates
                         </h3>
                         <ul className="space-y-3">
