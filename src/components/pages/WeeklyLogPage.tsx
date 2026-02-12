@@ -90,87 +90,50 @@ export function WeeklyLogPage() {
     }
   }, [visiblePosts]);
 
+  const scrollToPost = (index: number) => {
+    const ref = postRefs.current[index];
+    if (ref && containerRef.current) {
+      ref.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="w-full h-full flex bg-white dark:bg-gray-950 overflow-hidden">
-      {/* Left Sidebar - Timeline */}
-      <div className="w-1/3 bg-gray-100 dark:bg-gray-900 relative border-r border-gray-200 dark:border-gray-800" style={{ padding: '16px' }}>
-        <div className="h-full relative">
-          {/* Timeline Lines */}
-          <div className="relative h-full">
-            {/* Thick separator lines */}
-            {visiblePosts.map((post, index) => {
-              const yPosition = index * 120; // Spacing between posts
-              
-              return (
-                <motion.div
-                  key={`separator-${post.id}`}
-                  className="absolute left-0 right-0 h-px bg-gray-900 dark:bg-gray-100"
-                  style={{ top: `${yPosition}px` }}
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: index * 0.1,
-                    ease: [0.16, 1, 0.3, 1]
-                  }}
-                />
-              );
-            })}
-
-            {/* Thin item lines */}
-            {visiblePosts.map((post, index) => {
-              const yPosition = index * 120 + 60; // Position between separators
-              
-              return (
-                <motion.div
-                  key={`item-${post.id}`}
-                  className="absolute left-0 right-0 h-px bg-gray-400 dark:bg-gray-600"
-                  style={{ top: `${yPosition}px` }}
-                  initial={{ scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ 
-                    duration: 0.4, 
-                    delay: index * 0.1 + 0.3,
-                    ease: [0.16, 1, 0.3, 1]
-                  }}
-                />
-              );
-            })}
-
-            {/* Orange Indicator Line */}
-            <motion.div
-              className="absolute left-0 right-0 h-0.5 bg-orange-500 z-10 origin-left"
-              animate={{
-                y: activeIndex * 120 + 60,
-                scaleX: 1,
-              }}
-              transition={{ 
-                type: "spring",
-                stiffness: 100,
-                damping: 30,
-              }}
-              initial={{ scaleX: 0, y: 60 }}
-            >
-              {/* Orange Triangle */}
-              <motion.div
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-b-[6px] border-r-[8px] border-t-transparent border-b-transparent border-r-orange-500"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              />
-            </motion.div>
-          </div>
+      {/* Left Sidebar - Table of Contents */}
+      <div className="w-40 shrink-0 bg-gray-50 dark:bg-gray-900/50 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+        <div className="pt-6 pb-4 px-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            Contents
+          </h2>
         </div>
+        <nav className="flex-1 overflow-y-auto py-2 px-3">
+          <div className="relative pl-3 border-l-2 border-gray-200 dark:border-gray-700">
+            {visiblePosts.map((post, index) => (
+              <button
+                key={post.id}
+                onClick={() => scrollToPost(index)}
+                className={`block w-full text-left py-2 pl-3 -ml-px border-l-2 transition-colors ${
+                  activeIndex === index
+                    ? 'border-l-orange-500 text-orange-600 dark:text-orange-400 font-medium'
+                    : 'border-l-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <span className="text-sm">
+                  Week {getWeekNumber(post.title) || '?'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </nav>
       </div>
 
-      {/* Right Content Area */}
+      {/* Right Content Area - Wider feed */}
       <div 
         ref={containerRef}
-        className="flex-1 overflow-y-auto bg-white dark:bg-gray-950"
-        style={{ padding: '16px' }}
+        className="flex-1 overflow-y-auto bg-white dark:bg-gray-950 min-w-0"
+        style={{ padding: '24px 32px' }}
       >
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -306,14 +269,10 @@ export function WeeklyLogPage() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 + 0.5 }}
                   >
-                    {/* Photos - small thumbnails, click to open lightbox */}
+                    {/* Photos - uniform size (same as single-photo size), click to open lightbox */}
                     {post.photos && post.photos.length > 0 && (
                       <motion.div 
-                        className={`grid gap-2 max-w-56 ${
-                          post.photos.length === 1 ? 'grid-cols-1' :
-                          post.photos.length === 2 ? 'grid-cols-2' :
-                          'grid-cols-3'
-                        }`}
+                        className="flex flex-wrap gap-4"
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
@@ -330,7 +289,7 @@ export function WeeklyLogPage() {
                               duration: 0.5,
                               ease: [0.16, 1, 0.3, 1]
                             }}
-                            className="relative aspect-square bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer group/photo"
+                            className="relative w-56 h-56 shrink-0 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer group/photo"
                             whileHover={{ scale: 1.05 }}
                             onClick={() => {
                               setLightboxPhotos(post.photos ?? []);
