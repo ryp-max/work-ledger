@@ -10,7 +10,6 @@ import { playKeyboardClick } from '@/lib/keyboard-sound';
 import { useBrowserStore, type Tab, type PageType } from '@/stores/useBrowserStore';
 import { NewTabPage } from './pages/NewTabPage';
 import { WeeklyLogPage } from './pages/WeeklyLogPage';
-import { DailyLogPage } from './pages/DailyLogPage';
 import { PhotosPage } from './pages/PhotosPage';
 import { GuestbookPage } from './pages/GuestbookPage';
 
@@ -33,7 +32,6 @@ const DEFAULT_TABS: Tab[] = [
 
 export const BOOKMARKS = [
   { id: 'weekly-log', title: 'Weekly Log', url: 'chrome://weekly-log', icon: '📝' },
-  { id: 'daily-log', title: 'Daily Log', url: 'chrome://daily-log', icon: '📅' },
   { id: 'games', title: 'Games', url: 'chrome://games', icon: '🎮' },
   { id: 'spotify', title: 'Spotify', url: 'https://open.spotify.com', icon: '🎵' },
   { id: 'photos', title: 'Photos', url: 'chrome://photos', icon: '📷' },
@@ -586,8 +584,6 @@ export function ChromeBrowser() {
         );
       case 'weekly-log':
         return <WeeklyLogPage />;
-      case 'daily-log':
-        return <DailyLogPage />;
       case 'photos':
         return <PhotosPage />;
       case 'guestbook':

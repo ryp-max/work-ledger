@@ -2,14 +2,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { usePostsStore, type PostType } from '@/stores/usePostsStore';
+import { usePostsStore } from '@/stores/usePostsStore';
 
 interface CreatePostFormProps {
   onClose: () => void;
-  postType: PostType;
 }
 
-export function CreatePostForm({ onClose, postType }: CreatePostFormProps) {
+export function CreatePostForm({ onClose }: CreatePostFormProps) {
   const addPost = usePostsStore((s) => s.addPost);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -30,36 +29,28 @@ export function CreatePostForm({ onClose, postType }: CreatePostFormProps) {
     e.preventDefault();
     if (!title.trim() || !excerpt.trim()) return;
 
-    const isWeekly = postType === 'weekly';
-    const sanitizedTitle = isWeekly
-      ? title.trim()
-      : title.trim() || `Daily: ${date}`;
-
     const wip = parseLines(workInProgress);
     const goals = parseLines(nextWeekGoals);
     const updates = parseLines(lifeUpdates);
     const photoUrls = parseLines(photos);
 
     addPost({
-      type: postType,
-      title: sanitizedTitle,
+      type: 'weekly',
+      title: title.trim(),
       date,
       excerpt: excerpt.trim(),
       status: 'published',
-      hasDetailedContent: isWeekly && hasDetailedContent,
-      ...(isWeekly &&
-        hasDetailedContent && {
-          ...(wip.length > 0 && { workInProgress: wip }),
-          ...(goals.length > 0 && { nextWeekGoals: goals }),
-          ...(updates.length > 0 && { lifeUpdates: updates }),
-          ...(photoUrls.length > 0 && { photos: photoUrls }),
-        }),
+      hasDetailedContent,
+      ...(hasDetailedContent && {
+        ...(wip.length > 0 && { workInProgress: wip }),
+        ...(goals.length > 0 && { nextWeekGoals: goals }),
+        ...(updates.length > 0 && { lifeUpdates: updates }),
+        ...(photoUrls.length > 0 && { photos: photoUrls }),
+      }),
     });
 
     onClose();
   };
-
-  const isWeekly = postType === 'weekly';
 
   return (
     <motion.div
@@ -68,7 +59,7 @@ export function CreatePostForm({ onClose, postType }: CreatePostFormProps) {
       className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6 mb-8"
     >
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
-        New {isWeekly ? 'Weekly' : 'Daily'} Post
+        New Weekly Post
       </h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -79,7 +70,7 @@ export function CreatePostForm({ onClose, postType }: CreatePostFormProps) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={isWeekly ? 'Week 01: Getting Started' : 'Daily update'}
+            placeholder="Week 01: Getting Started"
             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             required
           />
@@ -109,9 +100,7 @@ export function CreatePostForm({ onClose, postType }: CreatePostFormProps) {
           />
         </div>
 
-        {isWeekly && (
-          <>
-            <label className="flex items-center gap-2">
+        <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={hasDetailedContent}
@@ -174,8 +163,6 @@ export function CreatePostForm({ onClose, postType }: CreatePostFormProps) {
                 </div>
               </>
             )}
-          </>
-        )}
 
         <div className="flex gap-2 pt-2">
           <button

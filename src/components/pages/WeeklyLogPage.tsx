@@ -215,10 +215,7 @@ export function WeeklyLogPage() {
           />
 
           {showCreateForm && canPost() && (
-            <CreatePostForm
-              postType="weekly"
-              onClose={() => setShowCreateForm(false)}
-            />
+            <CreatePostForm onClose={() => setShowCreateForm(false)} />
           )}
 
           {/* Posts */}
