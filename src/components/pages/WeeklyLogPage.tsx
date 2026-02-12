@@ -78,13 +78,9 @@ function formatDate(dateString: string): string {
 export function WeeklyLogPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [showPrivate, setShowPrivate] = useState(false);
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Filter posts based on privacy setting
-  const visiblePosts = MOCK_POSTS.filter(post => 
-    showPrivate || post.status === 'published'
-  );
+  const visiblePosts = MOCK_POSTS.filter(post => post.status === 'published');
 
   // Calculate which post is currently in view
   useEffect(() => {
@@ -129,17 +125,6 @@ export function WeeklyLogPage() {
 
   return (
     <div className="w-full h-full flex bg-white dark:bg-gray-950 overflow-hidden">
-      {/* Private/Draft Toggle */}
-      <motion.button
-        onClick={() => setShowPrivate(!showPrivate)}
-        className="fixed top-20 right-6 z-50 px-3 py-2 rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-sm text-xs text-gray-600 dark:text-gray-300"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        title={showPrivate ? 'Hide private/draft entries' : 'Show private/draft entries'}
-      >
-        {showPrivate ? '👁️ Hide Private' : '🔒 Show Private'}
-      </motion.button>
-
       {/* Left Sidebar - Timeline */}
       <div className="w-1/3 bg-gray-100 dark:bg-gray-900 relative border-r border-gray-200 dark:border-gray-800" style={{ padding: '16px' }}>
         <div className="h-full relative">

@@ -17,6 +17,15 @@ const MICRO_NOTES = [
 
 const SHORTCUTS = [
   { 
+    id: 'rachel', 
+    title: 'Rachel', 
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    )
+  },
+  { 
     id: 'weekly-log', 
     title: 'Weekly Log', 
     icon: (
@@ -129,7 +138,7 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
       </div>
 
       {/* Shortcuts - Chrome-style Squircle Tiles */}
-      <div className="w-full grid grid-cols-5 gap-3" style={{ maxWidth: '640px' }}>
+      <div className="w-full grid grid-cols-6 gap-3" style={{ maxWidth: '720px' }}>
         {SHORTCUTS.map((shortcut) => (
           <button
             key={shortcut.id}
