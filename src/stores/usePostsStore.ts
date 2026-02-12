@@ -82,6 +82,7 @@ const DEFAULT_POSTS: Post[] = [
 interface PostsState {
   posts: Post[];
   addPost: (post: Omit<Post, 'id'>) => void;
+  deletePost: (id: string) => void;
 }
 
 export const usePostsStore = create<PostsState>()(
@@ -99,6 +100,12 @@ export const usePostsStore = create<PostsState>()(
           posts: [newPost, ...state.posts].sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           ),
+        }));
+      },
+
+      deletePost: (id) => {
+        set((state) => ({
+          posts: state.posts.filter((p) => p.id !== id),
         }));
       },
     }),

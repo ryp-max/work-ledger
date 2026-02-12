@@ -31,6 +31,7 @@ export function WeeklyLogPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   const posts = usePostsStore((s) => s.posts);
+  const deletePost = usePostsStore((s) => s.deletePost);
   const canPost = useAuthStore((s) => s.canPost);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const username = useAuthStore((s) => s.username);
@@ -234,24 +235,41 @@ export function WeeklyLogPage() {
                   delay: index * 0.1,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                className="group"
+                className="group relative"
               >
                 {/* Title with Week # and Date */}
-                <motion.h2 
-                  className="text-2xl font-semibold text-gray-900 dark:text-gray-50 mb-4 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 + 0.2 }}
-                >
-                  <span className="text-gray-600 dark:text-gray-400 font-normal">
-                    Week {getWeekNumber(post.title) || '?'}
-                  </span>
-                  <span className="mx-2 text-gray-400 dark:text-gray-600">·</span>
-                  <time className="text-gray-600 dark:text-gray-400 font-normal">
-                    {formatDate(post.date)}
-                  </time>
-                </motion.h2>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <motion.h2 
+                    className="text-2xl font-semibold text-gray-900 dark:text-gray-50 tracking-tight group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: index * 0.1 + 0.2 }}
+                  >
+                    <span className="text-gray-600 dark:text-gray-400 font-normal">
+                      Week {getWeekNumber(post.title) || '?'}
+                    </span>
+                    <span className="mx-2 text-gray-400 dark:text-gray-600">·</span>
+                    <time className="text-gray-600 dark:text-gray-400 font-normal">
+                      {formatDate(post.date)}
+                    </time>
+                  </motion.h2>
+                  {canPost() && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Delete this post?')) {
+                          deletePost(post.id);
+                        }
+                      }}
+                      className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+                      title="Delete post"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
                 
                 {/* Subtitle */}
                 {post.title.includes(':') && (
