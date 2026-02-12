@@ -17,15 +17,6 @@ const MICRO_NOTES = [
 
 const SHORTCUTS = [
   { 
-    id: 'rachel', 
-    title: 'Rachel', 
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    )
-  },
-  { 
     id: 'weekly-log', 
     title: 'Weekly Log', 
     icon: (
@@ -108,8 +99,15 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center" style={{ padding: '16px', marginTop: '-40px' }}>
+      {/* Micro-Note - Above search bar with generous spacing */}
+      <div className="w-full flex items-center justify-center mb-10" style={{ maxWidth: '640px', padding: '24px 0' }}>
+        <p className={`text-sm text-gray-500 dark:text-gray-400 transition-opacity duration-300 ${showNote ? 'opacity-100' : 'opacity-0'}`}>
+          {MICRO_NOTES[currentNoteIndex]}
+        </p>
+      </div>
+
       {/* Centered Omnibox */}
-      <div className="w-full mb-3" style={{ maxWidth: '640px' }}>
+      <div className="w-full mb-8" style={{ maxWidth: '640px' }}>
         <form onSubmit={handleSearchSubmit} className="relative">
           <div 
             className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-1 focus-within:ring-gray-300 dark:focus-within:ring-gray-500 transition-all duration-200 px-5 py-3"
@@ -130,15 +128,8 @@ export function NewTabPage({ onBookmarkClick, onOmniboxSubmit, omniboxRef: exter
         </form>
       </div>
 
-      {/* Rotating Micro-Note */}
-      <div className="w-full mb-6 h-4 flex items-center justify-center" style={{ maxWidth: '640px' }}>
-        <p className={`text-[11px] text-gray-400 dark:text-gray-500 transition-opacity duration-300 ${showNote ? 'opacity-100' : 'opacity-0'}`}>
-          {MICRO_NOTES[currentNoteIndex]}
-        </p>
-      </div>
-
       {/* Shortcuts - Chrome-style Squircle Tiles */}
-      <div className="w-full grid grid-cols-6 gap-3" style={{ maxWidth: '720px' }}>
+      <div className="w-full grid grid-cols-5 gap-3" style={{ maxWidth: '640px' }}>
         {SHORTCUTS.map((shortcut) => (
           <button
             key={shortcut.id}

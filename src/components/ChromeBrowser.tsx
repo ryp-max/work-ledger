@@ -30,7 +30,6 @@ const DEFAULT_TABS: Tab[] = [
 ];
 
 export const BOOKMARKS = [
-  { id: 'rachel', title: 'Rachel', url: 'chrome://rachel', icon: '💬' },
   { id: 'weekly-log', title: 'Weekly Log', url: 'chrome://weekly-log', icon: '📝' },
   { id: 'games', title: 'Games', url: 'chrome://games', icon: '🎮' },
   { id: 'spotify', title: 'Spotify', url: 'https://open.spotify.com', icon: '🎵' },

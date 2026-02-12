@@ -12,13 +12,15 @@ interface RachelChatPageProps {
   initialQuery?: string;
 }
 
+// Persists across Strict Mode remounts to prevent duplicate initial queries
+const sentInitialQueries = new Set<string>();
+
 export function RachelChatPage({ initialQuery }: RachelChatPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const initialQuerySentRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -28,15 +30,17 @@ export function RachelChatPage({ initialQuery }: RachelChatPageProps) {
     scrollToBottom();
   }, [messages]);
 
+  const isLoadingRef = useRef(false);
   const sendMessage = useCallback(async (content: string) => {
     const trimmed = content.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoadingRef.current) return;
 
     const userMessage: ChatMessage = { role: 'user', content: trimmed };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
     setError(null);
+    isLoadingRef.current = true;
 
     try {
       const response = await fetch('/api/chat', {
@@ -68,15 +72,16 @@ export function RachelChatPage({ initialQuery }: RachelChatPageProps) {
       ]);
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
   }, [messages]);
 
-  // Send initial query when tab opens with one
+  // Send initial query when tab opens with one (guarded against Strict Mode double-mount)
   useEffect(() => {
-    if (initialQuery?.trim() && !initialQuerySentRef.current) {
-      initialQuerySentRef.current = true;
-      sendMessage(initialQuery);
-    }
+    const query = initialQuery?.trim();
+    if (!query || sentInitialQueries.has(query)) return;
+    sentInitialQueries.add(query);
+    sendMessage(query);
   }, [initialQuery, sendMessage]);
 
   return (
