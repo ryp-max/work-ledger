@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { usePostsStore } from '@/stores/usePostsStore';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -29,6 +29,9 @@ export function WeeklyLogPage() {
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [lightboxPhotos, setLightboxPhotos] = useState<string[] | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxZoom, setLightboxZoom] = useState(1);
 
   const posts = usePostsStore((s) => s.posts);
   const deletePost = usePostsStore((s) => s.deletePost);
@@ -303,10 +306,10 @@ export function WeeklyLogPage() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 + 0.5 }}
                   >
-                    {/* Photos */}
+                    {/* Photos - small thumbnails, click to open lightbox */}
                     {post.photos && post.photos.length > 0 && (
                       <motion.div 
-                        className={`grid gap-4 justify-center ${
+                        className={`grid gap-2 max-w-56 ${
                           post.photos.length === 1 ? 'grid-cols-1' :
                           post.photos.length === 2 ? 'grid-cols-2' :
                           'grid-cols-3'
@@ -328,7 +331,12 @@ export function WeeklyLogPage() {
                               ease: [0.16, 1, 0.3, 1]
                             }}
                             className="relative aspect-square bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer group/photo"
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.05 }}
+                            onClick={() => {
+                              setLightboxPhotos(post.photos ?? []);
+                              setLightboxIndex(idx);
+                              setLightboxZoom(1);
+                            }}
                           >
                             <img
                               src={photo}
@@ -437,6 +445,116 @@ export function WeeklyLogPage() {
           </div>
         </div>
       </div>
+
+      {/* Photo lightbox - shows only this post's photos */}
+      <AnimatePresence>
+        {lightboxPhotos && lightboxPhotos.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-8"
+            onClick={() => setLightboxPhotos(null)}
+          >
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxPhotos(null);
+              }}
+              className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white z-10"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </motion.button>
+
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-4 items-center z-10">
+              <motion.button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxZoom((prev) => Math.max(0.5, prev - 0.25));
+                }}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </motion.button>
+              <span className="text-white text-sm min-w-[60px] text-center">{Math.round(lightboxZoom * 100)}%</span>
+              <motion.button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxZoom((prev) => Math.min(3, prev + 0.25));
+                }}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </motion.button>
+            </div>
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: lightboxZoom, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-full"
+            >
+              <img
+                src={lightboxPhotos[lightboxIndex]}
+                alt={`Photo ${lightboxIndex + 1}`}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                style={{ transform: `scale(${lightboxZoom})` }}
+              />
+            </motion.div>
+
+            {lightboxPhotos.length > 1 && (
+              <>
+                {lightboxIndex > 0 && (
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex((i) => i - 1);
+                      setLightboxZoom(1);
+                    }}
+                    className="absolute left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white z-10"
+                    whileHover={{ scale: 1.1, x: -5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </motion.button>
+                )}
+                {lightboxIndex < lightboxPhotos.length - 1 && (
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex((i) => i + 1);
+                      setLightboxZoom(1);
+                    }}
+                    className="absolute right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white z-10"
+                    whileHover={{ scale: 1.1, x: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.button>
+                )}
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
